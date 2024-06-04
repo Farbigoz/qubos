@@ -5,7 +5,6 @@
 #include "system/interface/dma.h"
 #include "system/interface/can.h"
 #include "system/interface/uart.h"
-#include "system/interface/onewire.h"
 #include "system/interface/spi.h"
 #include "system/interface/i2c.h"
 #include "system/interface/fs.h"
@@ -141,7 +140,67 @@ decltype(test_signal1)::Slot test_slot1_dup;
 decltype(test_signal2)::Slot test_slot2_dup;
 
 
+typedef enum {
+	ENUM1_NONE = 0,
+
+	ENUM1_0,
+	ENUM1_1,
+	ENUM1_2,
+	ENUM1_3,
+} enum1_t;
+
+typedef enum {
+	ENUM2_NONE = 0,
+
+	ENUM2_0,
+	ENUM2_1,
+	ENUM2_2,
+	ENUM2_3,
+} enum2_t;
+
+typedef enum {
+	ENUM3_NONE = 0,
+
+	ENUM3_0,
+	ENUM3_1,
+	ENUM3_2,
+	ENUM3_3,
+} enum3_t;
+
+typedef struct ENUM_CFG {
+	enum1_t enum1;
+	enum2_t enum2;
+	enum3_t enum3;
+
+	constexpr ENUM_CFG(enum1_t enum1) : enum1(enum1), enum2(ENUM2_NONE), enum3(ENUM3_NONE) {}
+	constexpr ENUM_CFG(enum2_t enum2) : enum1(ENUM1_NONE), enum2(enum2), enum3(ENUM3_NONE) {}
+	constexpr ENUM_CFG(enum3_t enum3) : enum1(ENUM1_NONE), enum2(ENUM2_NONE), enum3(enum3) {}
+
+	constexpr ENUM_CFG(enum1_t enum1, enum2_t enum2, enum3_t enum3) : enum1(enum1), enum2(enum2), enum3(enum3) {}
+
+	constexpr ENUM_CFG operator | (enum1_t flag) {
+		return {static_cast<enum1_t>(enum1 | flag), enum2, enum3};
+	}
+
+	constexpr ENUM_CFG operator | (enum2_t flag) {
+		return {enum1, static_cast<enum2_t>(enum2 | flag), enum3};
+	}
+
+	constexpr ENUM_CFG operator | (enum3_t flag) {
+		return {enum1, enum2, static_cast<enum3_t>(enum3 | flag)};
+	}
+} enum_cfg;
+
+
+void test_fn(enum_cfg cfg = ENUM1_NONE) {
+	(void)0;
+}
+
+
 int main() {
+	//test_fn(ENUM1_0 | ENUM1_1 | ENUM2_3 | ENUM3_1);
+
+
 	if (false) {
 		auto test_slot1 = test_signal1.static_slot(test_slot1_fn);
 		test_slot1_dup = test_signal1.static_slot(test_slot1_dup_fn);

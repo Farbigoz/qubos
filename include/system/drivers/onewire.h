@@ -60,7 +60,7 @@ namespace sys {
 		uint8_t data[sizeof(command_t) + sizeof(address_t) + sizeof(command_t)];
 
 		data[0] = CMD_MATCH_ROM;
-		memcpy(&data[1], addr.raw, sizeof(address_t::raw));
+		for (int i = 0; i < ROM_SIZE; i++) data[1+i] = addr.raw[i];
 		data[9] = cmd;
 
 		return transmit(data, sizeof(data));

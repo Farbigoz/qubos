@@ -103,16 +103,16 @@ public:
 
 // Methods
 public:
-	virtual result_t init_output() = 0;
-	virtual result_t init_input() = 0;
-	virtual result_t init_analog() = 0;
-	virtual result_t init_alt(alt_t) = 0;
+	virtual sys::result_t init_output() = 0;
+	virtual sys::result_t init_input() = 0;
+	virtual sys::result_t init_analog() = 0;
+	virtual sys::result_t init_alt(alt_t) = 0;
 
-	virtual result_t set_driver(driver_t) = 0;
-	virtual result_t set_pull(pull_t) = 0;
-	virtual result_t set_speed(speed_t) = 0;
-	virtual result_t set_alt(alt_t) = 0;
-	virtual result_t set_irq_trig(trigger_t) = 0;
+	virtual sys::result_t set_driver(driver_t) = 0;
+	virtual sys::result_t set_pull(pull_t) = 0;
+	virtual sys::result_t set_speed(speed_t) = 0;
+	virtual sys::result_t set_alt(alt_t) = 0;
+	virtual sys::result_t set_irq_trig(trigger_t) = 0;
 
 	virtual driver_t get_driver() = 0;
 	virtual pull_t get_pull() = 0;
@@ -172,7 +172,12 @@ public:
 	alt_t get_alt()						override { return ALT_NONE; }
 	trigger_t get_irq_trigger()			override { return TRIG_NONE; }
 	uint32_t get_irq_prior()			override { return 0; }
+	uint32_t get_clock_freq()			override { return 0; }
 
+	result_t enable_clock()				override { return RES_OK; }
+	result_t disable_clock()			override { return RES_OK; }
+
+	bool is_irq()						override { return false; }
 	result_t enable_irq()				override { return RES_OK; }
 	result_t disable_irq()				override { return RES_OK; }
 	void set()							override {}
