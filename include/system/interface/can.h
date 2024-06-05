@@ -3,7 +3,7 @@
 
 #include "system/system.h"
 #include "system/signal.h"
-#include "system/periphery.h"
+#include "system/interface/periphery.h"
 
 namespace sys {
 

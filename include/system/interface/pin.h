@@ -3,11 +3,11 @@
 
 #include "system/system.h"
 #include "system/signal.h"
-#include "system/periphery.h"
+#include "system/interface/periphery.h"
 
 namespace sys {
 
-class ipin : public periphery_with_irq {
+class pin : virtual public periphery_with_irq {
 // Enums
 public:
 	typedef enum SPEED_T {
@@ -37,6 +37,23 @@ public:
 
 	typedef enum ALT_T {
 		ALT_NONE,
+
+		ALT_0,
+		ALT_1,
+		ALT_2,
+		ALT_3,
+		ALT_4,
+		ALT_5,
+		ALT_6,
+		ALT_7,
+		ALT_8,
+		ALT_9,
+		ALT_10,
+		ALT_11,
+		ALT_12,
+		ALT_13,
+		ALT_14,
+		ALT_15,
 
 		ALT_SWD,
 		ALT_JTAG,
@@ -90,35 +107,39 @@ public:
 
 		ALT_USB_FS,
 		ALT_USB_HS,
+		ALT_USB_FS_HS,
 
 		ALT_CAN1,
 		ALT_CAN2,
 
+		ALT_SDIO,
 		ALT_ETH,
+		ALT_DCMI,
+		ALT_LTDC,
 	} alt_t;
 
 // Signals
 public:
-	typedef Signal<ipin&>	signal_irq_t;
+	typedef Signal<pin&>	signal_irq_t;
 
 // Methods
 public:
-	virtual sys::result_t init_output() = 0;
-	virtual sys::result_t init_input() = 0;
+	virtual sys::result_t init_output(driver_t drv, pull_t pull, speed_t speed) = 0;
+	virtual sys::result_t init_input(pull_t pull, sys::pin::trigger_t trig) = 0;
 	virtual sys::result_t init_analog() = 0;
-	virtual sys::result_t init_alt(alt_t) = 0;
+	virtual sys::result_t init_alt(alt_t af, driver_t drv, pull_t pull, speed_t speed) = 0;
 
-	virtual sys::result_t set_driver(driver_t) = 0;
-	virtual sys::result_t set_pull(pull_t) = 0;
-	virtual sys::result_t set_speed(speed_t) = 0;
-	virtual sys::result_t set_alt(alt_t) = 0;
-	virtual sys::result_t set_irq_trig(trigger_t) = 0;
+	virtual sys::result_t set_driver(driver_t drv) = 0;
+	virtual sys::result_t set_pull(pull_t pull) = 0;
+	virtual sys::result_t set_speed(speed_t speed) = 0;
+	virtual sys::result_t set_alt(alt_t af) = 0;
+	virtual sys::result_t set_irq_trig(trigger_t trig) = 0;
 
-	virtual driver_t get_driver() = 0;
-	virtual pull_t get_pull() = 0;
-	virtual speed_t get_speed() = 0;
-	virtual alt_t get_alt() = 0;
-	virtual trigger_t get_irq_trigger() = 0;
+	// virtual driver_t get_driver() = 0;
+	// virtual pull_t get_pull() = 0;
+	// virtual speed_t get_speed() = 0;
+	// virtual alt_t get_alt() = 0;
+	// virtual trigger_t get_irq_trigger() = 0;
 
 	virtual void set() = 0;
 	virtual void set(bool v) = 0;
@@ -129,13 +150,81 @@ public:
 	virtual bool read() = 0;
 
 public:
-	virtual ~ipin() = default;
+	virtual ~pin() = default;
+
+	inline sys::result_t init_output() {
+		return init_output(sys::pin::DRV_PUSH_PULL, sys::pin::PULL_NONE, pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_output(sys::pin::driver_t drv) {
+		return init_output(drv, sys::pin::PULL_NONE, pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_output(sys::pin::driver_t drv, sys::pin::pull_t pull) {
+		return init_output(drv, pull, sys::pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_output(sys::pin::driver_t drv, sys::pin::speed_t speed) {
+		return init_output(drv, sys::pin::PULL_NONE, speed);
+	}
+
+	inline sys::result_t init_output(sys::pin::pull_t pull) {
+		return init_output(sys::pin::DRV_PUSH_PULL, pull, pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_output(sys::pin::pull_t pull, sys::pin::speed_t speed) {
+		return init_output(sys::pin::DRV_PUSH_PULL, pull, speed);
+	}
+
+	inline sys::result_t init_output(sys::pin::speed_t speed) {
+		return init_output(sys::pin::DRV_PUSH_PULL, sys::pin::PULL_NONE, speed);
+	}
+
+	inline sys::result_t init_input() {
+		return init_input(sys::pin::PULL_NONE, sys::pin::TRIG_NONE);
+	}
+
+	inline sys::result_t init_input(sys::pin::pull_t pull) {
+		return init_input(pull, sys::pin::TRIG_NONE);
+	}
+
+	inline sys::result_t init_input(sys::pin::trigger_t trig) {
+		return init_input(sys::pin::PULL_NONE, trig);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af) {
+		return init_alt(af, sys::pin::DRV_PUSH_PULL, sys::pin::PULL_NONE, pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::driver_t drv) {
+		return init_alt(af, drv, sys::pin::PULL_NONE, sys::pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::driver_t drv, sys::pin::pull_t pull) {
+		return init_alt(af, drv, pull, sys::pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::driver_t drv, sys::pin::speed_t speed) {
+		return init_alt(af, drv, sys::pin::PULL_NONE, speed);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::pull_t pull) {
+		return init_alt(af, sys::pin::DRV_PUSH_PULL, pull, sys::pin::SPEED_FAST);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::pull_t pull, sys::pin::speed_t speed) {
+		return init_alt(af, sys::pin::DRV_PUSH_PULL, pull, speed);
+	}
+
+	inline sys::result_t init_alt(sys::pin::alt_t af, sys::pin::speed_t speed) {
+		return init_alt(af, sys::pin::DRV_PUSH_PULL, sys::pin::PULL_NONE, speed);
+	}
 
 public:
 	signal_irq_t	signal_irq;
 
 protected:
-	ipin() {}
+	pin() {}
 
 	// копирование
 	//ipin(const ipin&) = delete;
@@ -149,15 +238,15 @@ protected:
 
 
 
-class nullpin : public ipin {
+class nullpin : public pin {
 public:
-	nullpin() : ipin()
+	nullpin() : pin()
 	{}
 
-	result_t init_output()				override { return RES_OK; }
-	result_t init_input()				override { return RES_OK; }
-	result_t init_analog()				override { return RES_OK; }
-	result_t init_alt(alt_t)			override { return RES_OK; }
+	//result_t init_output()				override { return RES_OK; }
+	//result_t init_input()				override { return RES_OK; }
+	//result_t init_analog()				override { return RES_OK; }
+	//result_t init_alt(alt_t)			override { return RES_OK; }
 	result_t deinit()					override { return RES_OK; }
 	result_t set_driver(driver_t d)		override { return RES_OK; }
 	result_t set_pull(pull_t p)			override { return RES_OK; }
@@ -166,11 +255,11 @@ public:
 	result_t set_irq_trig(trigger_t)	override { return RES_OK; }
 	result_t set_irq_prior(uint32_t)	override { return RES_OK; }
 
-	driver_t get_driver()				override { return DRV_PUSH_PULL; }
-	pull_t get_pull()					override { return PULL_NONE; }
-	speed_t get_speed()					override { return SPEED_SLOW; }
-	alt_t get_alt()						override { return ALT_NONE; }
-	trigger_t get_irq_trigger()			override { return TRIG_NONE; }
+	//driver_t get_driver()				override { return DRV_PUSH_PULL; }
+	//pull_t get_pull()					override { return PULL_NONE; }
+	//speed_t get_speed()					override { return SPEED_SLOW; }
+	//alt_t get_alt()						override { return ALT_NONE; }
+	//trigger_t get_irq_trigger()			override { return TRIG_NONE; }
 	uint32_t get_irq_prior()			override { return 0; }
 	uint32_t get_clock_freq()			override { return 0; }
 

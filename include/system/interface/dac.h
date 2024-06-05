@@ -2,8 +2,8 @@
 #define SYSTEM_INTERFACE_DAC_H
 
 #include "system/system.h"
-#include "system/periphery.h"
 #include "system/signal.h"
+#include "system/interface/periphery.h"
 #include "system/interface/dma.h"
 
 namespace sys {

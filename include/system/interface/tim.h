@@ -2,7 +2,7 @@
 #define SYSTEM_INTERFACE_TIM_H
 
 #include "system/system.h"
-#include "system/periphery.h"
+#include "system/interface/periphery.h"
 
 namespace sys {
 	class itim : public periphery_with_irq {

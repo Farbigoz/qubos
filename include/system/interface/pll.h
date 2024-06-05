@@ -2,7 +2,7 @@
 #define SYSTEM_INTERFACE_PLL_H
 
 #include "system/interface/pll.h"
-#include "system/periphery.h"
+#include "system/interface/periphery.h"
 
 namespace sys {
 	class ipll : public periphery {
