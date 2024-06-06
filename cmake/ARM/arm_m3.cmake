@@ -6,16 +6,15 @@ set(ARCH_COMPILE_DEFS
         ${ARCH_COMPILE_DEFS}
 
         # CMSIS DSP
-        "-DARM_MATH_CM4"
+        "-DARM_MATH_CM3"
         "-DARM_MATH_MATRIX_CHECK"
         "-DARM_MATH_ROUNDING"
-        "-DARM_IRQ_VEC_LEN=128"
 )
 
 set(ARCH_COMPILE_OPTIONS
         ${ARCH_COMPILE_OPTIONS}
 
-        "-mcpu=cortex-m4"       # Cortex version
+        "-mcpu=cortex-m3"       # Cortex version
         "-mthumb"               # Use short commands
         "-mthumb-interwork"     # Use short commands
         "-ffunction-sections"   # Remove unused code
@@ -24,26 +23,20 @@ set(ARCH_COMPILE_OPTIONS
         "-fno-exceptions"       # Disable C++ exceptions
         "-fmessage-length=0"
 
-        "$<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>"
-
-        "-mfloat-abi=hard"
-        "-mfpu=fpv4-sp-d16"
+        "$<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>"   # Enable assembler files preprocessing
 )
 
 set(ARCH_LINK_OPTIONS
         ${ARCH_LINK_OPTIONS}
 
         "-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_NAME}.map"
-        "-mcpu=cortex-m4"
+        "-mcpu=cortex-m3"
         "-mthumb"
         "-mthumb-interwork"
         "-T" "${ARCH_LINK_SCRIPT}"
 
         "--specs=nosys.specs"
         "--specs=nano.specs"
-
-        "-mfloat-abi=hard"
-        "-mfpu=fpv4-sp-d16"
 )
 
 set(ARCH_FREERTOS_PORT
@@ -76,10 +69,10 @@ set(ARCH_LIBRARIES
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/CMSIS-DSP)
 
 target_include_directories(CMSISDSP
-    PUBLIC
+        PUBLIC
         ${ARCH_INCLUDES}
 )
 target_compile_options(CMSISDSP
-    PUBLIC
+        PUBLIC
         ${ARCH_LINK_OPTIONS}
 )

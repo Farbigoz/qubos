@@ -332,7 +332,6 @@ public:
 				break;
 
 			default:
-				set_irq_trig(mask, sys::pin::TRIG_NONE);
 				return sys::RES_ERROR;
 		}
 

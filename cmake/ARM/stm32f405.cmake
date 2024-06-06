@@ -1,18 +1,18 @@
 
 set(ARCH_COMPILE_DEFS
-    ${ARCH_COMPILE_DEFS}
-    "-DSTM32F405xx"
+        ${ARCH_COMPILE_DEFS}
+        "-DSTM32F405xx"
 )
 
 set(ARCH_LINK_SCRIPT
-    "${PROJECT_SOURCE_DIR}/linker/STM32F405RGTX_FLASH.ld"
+        "${CMAKE_SOURCE_DIR}/linker/STM32F405RGTX_FLASH.ld"
 )
 
 set(ARCH_SOURCES
-    ${ARCH_SOURCES}
+        ${ARCH_SOURCES}
 
-    "${PROJECT_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Source/Templates/gcc/startup_stm32f405xx.s"
+        # "${CMAKE_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Source/Templates/gcc/startup_stm32f405xx.s"
 )
 
 
-include(${CMAKE_CURRENT_LIST_DIR}/stm32f4xx.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/stm32f4.cmake)

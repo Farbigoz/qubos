@@ -1,52 +1,71 @@
 #ifndef ARM_IRQ_H
 #define ARM_IRQ_H
 
+#include "system/signal.h"
 #include "system/interface/periphery.h"
 
+
 namespace arch {
-	class periphery_with_irq_impl : virtual public sys::periphery_with_irq {
+	class irq {
+	public:
+		typedef sys::Signal<> irq_signal_t;
+
 	public:
 		static inline const uint32_t MAX_IRQ_PRIOR = (1 << __NVIC_PRIO_BITS) - 1;
 
 	public:
-		virtual IRQn_Type get_irq_type() = 0;
-
-	public:
-		sys::result_t set_irq_prior(uint32_t prior) override {
+		static sys::result_t set_irq_prior(IRQn_Type irqn, uint32_t prior) {
 			if (prior > MAX_IRQ_PRIOR)
 				return sys::RES_ERROR;
 
 			uint32_t prioritygroup = NVIC_GetPriorityGrouping();
-			NVIC_SetPriority(get_irq_type(), NVIC_EncodePriority(prioritygroup, prior, 0));
+			NVIC_SetPriority(irqn, NVIC_EncodePriority(prioritygroup, prior, 0));
 
 			return sys::RES_OK;
 		}
 
-		uint32_t get_irq_prior() override {
+		static uint32_t get_irq_prior(IRQn_Type irqn) {
 			uint32_t prempt_prior, sub_prior;
 
 			uint32_t prioritygroup = NVIC_GetPriorityGrouping();
-			NVIC_DecodePriority(NVIC_GetPriority(get_irq_type()), prioritygroup, &prempt_prior, &sub_prior);
+			NVIC_DecodePriority(NVIC_GetPriority(irqn), prioritygroup, &prempt_prior, &sub_prior);
 
 			return prempt_prior;
 		}
 
-		sys::result_t enable_irq() override {
-			NVIC_EnableIRQ(get_irq_type());
+		static sys::result_t enable_irq(IRQn_Type irqn) {
+			NVIC_EnableIRQ(irqn);
 			return sys::RES_OK;
 		}
 
-		sys::result_t disable_irq() override {
-			NVIC_DisableIRQ(get_irq_type());
+		static sys::result_t disable_irq(IRQn_Type irqn) {
+			NVIC_DisableIRQ(irqn);
 			return sys::RES_OK;
 		}
 
-		bool is_irq() override {
-			return NVIC_GetEnableIRQ(get_irq_type());
+		static bool is_irq(IRQn_Type irqn) {
+			return NVIC_GetEnableIRQ(irqn);
 		}
 
-	protected:
-		periphery_with_irq_impl() {}
+		inline static void handle(uint8_t irqn) {
+			if (irqn < 0) return;
+			if (irqn >= ARM_IRQ_VEC_LEN) return;
+
+			if (irq_signal[irqn].slot_cnt() == 0)
+				while(1) {}	// Has not IRQ handler
+
+			irq_signal[irqn].emit();
+		}
+
+		inline static irq_signal_t& get_irq_signal(IRQn_Type irqn) {
+			return irq_signal[irqn+16];		// + 16 ARM-CORTEX interrupts
+		}
+
+	private:
+		irq() {}
+
+	private:
+		inline static irq_signal_t irq_signal[ARM_IRQ_VEC_LEN];
 	};
 }
 

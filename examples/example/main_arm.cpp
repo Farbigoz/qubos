@@ -25,68 +25,43 @@ void delay() {
 	for (int i = 0; i < 100000; i++);
 }
 
-extern "C" {
 
-void EXTI0_IRQHandler() {
-	delay();
+void pin_irq_handler(sys::pin &pin) {
+	PIN_LED1.tgl();
 }
 
-void EXTI1_IRQHandler() {
-	delay();
-}
 
-unsigned irqnumber;
-
-void EXTI2_IRQHandler() {
-	irqnumber = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
-
-	if ((EXTI->PR & sys::port::PIN_2) == 0) { return; }
-	EXTI->PR = sys::port::PIN_2;
-}
-
-void EXTI3_IRQHandler() {
-	irqnumber = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
-
-	if ((EXTI->PR & sys::port::PIN_3) == 0) { return; }
-	EXTI->PR = sys::port::PIN_3;
-}
-
-void EXTI4_IRQHandler() {
-	irqnumber = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
-
-	if ((EXTI->PR & sys::port::PIN_4) == 0) { return; }
-	EXTI->PR = sys::port::PIN_4;
-}
-
-void EXTI9_5_IRQHandler() {
-	delay();
-}
-
-void EXTI15_10_IRQHandler() {
-	delay();
-}
-
-}
+sys::pin::signal_irq_t::Slot	pin1_irq_slot;
+sys::pin::signal_irq_t::Slot	pin2_irq_slot;
+sys::pin::signal_irq_t::Slot	pin3_irq_slot;
 
 int main() {
 	PORT_C.enable_clock();
 
+	PIN_LED2.signal_irq.connect(pin1_irq_slot, pin_irq_handler);
+	PIN_LED3.signal_irq.connect(pin2_irq_slot, pin_irq_handler);
+	//PIN_LED4.signal_irq.connect(pin3_irq_slot, pin_irq_handler);
+
 	PIN_LED1.init_output();
 	// PIN_LED2.init_output();
 	// PIN_LED3.init_output();
-	// PIN_LED4.init_output();
+	PIN_LED4.init_output();
 
 	PIN_LED2.init_input(sys::pin::TRIG_RISING);
 	PIN_LED2.set_irq_prior(0);
 	PIN_LED2.enable_irq();
 
-	PIN_LED3.init_input(sys::pin::TRIG_RISING);
+	PIN_LED3.init_input(sys::pin::TRIG_FALLING);
 	PIN_LED3.set_irq_prior(0);
 	PIN_LED3.enable_irq();
 
-	PIN_LED4.init_input(sys::pin::TRIG_RISING);
-	PIN_LED4.set_irq_prior(0);
-	PIN_LED4.enable_irq();
+	//PIN_LED4.init_input(sys::pin::TRIG_RISING);
+	//PIN_LED4.set_irq_prior(0);
+	//PIN_LED4.enable_irq();
+
+	//a = g_pfnVectors[0];
+
+	//EXTI15_10_IRQHandler();
 
 
 	// PIN_LED1.signal_irq
@@ -103,8 +78,10 @@ int main() {
 
 		//PIN_LED1.set(PIN_LED4.read());
 
+		for (int i= 0; i < 10; i++)
+			delay();
+		PIN_LED4.tgl();
 
-		delay();
-		PIN_LED1.tgl();
+		//PIN_LED1.tgl();
 	}
 }

@@ -26,30 +26,45 @@ namespace sys {
 				(*iterator).emit(args...);
 		}
 
-		bool connect(Slot &slot) {
+		inline bool connect(Slot &slot) {
 			return slot_list.push_back(slot);
 		}
 
-		bool disconnect(Slot &slot) {
+		inline bool connect(Slot &slot, slot_fn_t fn) {
+			slot.set_function(fn);
+			return slot_list.push_back(slot);
+		}
+
+		inline bool connect(SlotWithCtx &slot, slot_with_ctx_fn_t fn, void *ctx) {
+			slot.set_function(fn);
+			slot.set_ctx(ctx);
+			return slot_list.push_back(slot);
+		}
+
+		inline bool disconnect(Slot &slot) {
 			return slot_list.remove(slot);
 		}
 
-		Slot static_slot(slot_fn_t fn) {
+		inline Slot static_slot(slot_fn_t fn) {
 			return Slot(*this, fn);
 		}
 
-		Slot* alloc_slot(slot_fn_t fn) {
+		inline Slot* alloc_slot(slot_fn_t fn) {
 			auto* slot = new Slot(*this, fn);
 			return slot;
 		}
 
-		SlotWithCtx static_slot(slot_with_ctx_fn_t fn, void *ctx) {
+		inline SlotWithCtx static_slot(slot_with_ctx_fn_t fn, void *ctx) {
 			return SlotWithCtx(*this, fn, ctx);
 		}
 
-		SlotWithCtx* alloc_slot(slot_with_ctx_fn_t fn, void *ctx) {
+		inline SlotWithCtx* alloc_slot(slot_with_ctx_fn_t fn, void *ctx) {
 			auto* slot = new SlotWithCtx(*this, fn, ctx);
 			return slot;
+		}
+
+		inline size_t slot_cnt() {
+			return slot_list.len();
 		}
 
 	public:
@@ -95,7 +110,7 @@ namespace sys {
 				return *this;
 			}
 
-			void set_function(slot_fn_t new_fn) {
+			inline void set_function(slot_fn_t new_fn) {
 				fn = new_fn;
 			}
 
@@ -112,15 +127,26 @@ namespace sys {
 
 		class SlotWithCtx : public Slot {
 		public:
-			SlotWithCtx(Signal &signal, slot_with_ctx_fn_t fn, void *ctx)
+			SlotWithCtx()
 			:
-					Slot(signal, nullptr),
-					fn(fn),
-					ctx(ctx)
+			Slot(),
+			fn(nullptr),
+			ctx(nullptr)
 			{}
 
-			void set_function(slot_with_ctx_fn_t new_fn) {
+			SlotWithCtx(Signal &signal, slot_with_ctx_fn_t fn, void *ctx)
+			:
+			Slot(signal, nullptr),
+			fn(fn),
+			ctx(ctx)
+			{}
+
+			inline void set_function(slot_with_ctx_fn_t new_fn) {
 				fn = new_fn;
+			}
+
+			inline void set_ctx(void *new_ctx) {
+				ctx = new_ctx;
 			}
 
 		protected:

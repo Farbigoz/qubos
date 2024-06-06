@@ -105,15 +105,15 @@ namespace sys {
 			return true;
 		}
 
-		size_t len() const {
+		inline size_t len() const {
 			return cnt;
 		}
 
-		bool is_empty() const {
+		inline bool is_empty() const {
 			return cnt == 0;
 		}
 
-		bool has(Node& node) {
+		inline bool has(Node& node) {
 			return node.list == this;
 		}
 

@@ -8,15 +8,22 @@
 
 namespace arch {
 
-class pin : public sys::pin, public arch::periphery_with_irq_impl {
+class pin : public sys::pin {
 
 public:
 	pin(arch::port &port, arch::port::pin_t pin)
 	:
 	sys::pin(),
 	port(port),
-	pin_mask(pin)
-	{}
+	pin_mask(pin),
+	irqn(get_irq_type(pin))
+	{
+		arch::irq::get_irq_signal(irqn).connect(
+				irq_slot,
+				[](void *ctx) { reinterpret_cast<arch::pin*>(ctx)->irq_handler(); },
+				this
+		);
+	}
 
 // Interface sys::periphery
 public:
@@ -34,6 +41,28 @@ public:
 
 	inline sys::result_t disable_clock() override {
 		return port.disable_clock();
+	}
+
+// Interface sys::periphery_with_irq
+public:
+	inline sys::result_t set_irq_prior(uint32_t prior) override {
+		return arch::irq::set_irq_prior(irqn, prior);
+	}
+
+	inline uint32_t get_irq_prior() override {
+		return arch::irq::get_irq_prior(irqn);
+	}
+
+	inline bool is_irq() override {
+		return arch::irq::is_irq(irqn);
+	}
+
+	inline sys::result_t enable_irq() override {
+		return arch::irq::enable_irq(irqn);
+	}
+
+	inline sys::result_t disable_irq() override {
+		return arch::irq::disable_irq(irqn);
 	}
 
 // Interface sys::ipin
@@ -112,8 +141,15 @@ public:
 	}
 
 private:
-	IRQn_Type get_irq_type() override {
-		switch (pin_mask) {
+	void irq_handler() {
+		if ((EXTI->PR & pin_mask) == 0) { return; }
+		EXTI->PR = pin_mask;
+		signal_irq.emit(*this);
+	}
+
+private:
+	static IRQn_Type get_irq_type(arch::port::pin_t pin) {
+		switch (pin) {
 			case arch::port::PIN_0:
 				return EXTI0_IRQn;
 			case arch::port::PIN_1:
@@ -144,8 +180,10 @@ private:
 	}
 
 private:
+	IRQn_Type irqn;
 	arch::port &port;
 	arch::port::pin_mask_t pin_mask;
+	arch::irq::irq_signal_t::SlotWithCtx irq_slot;
 };
 }
 
