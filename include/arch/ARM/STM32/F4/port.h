@@ -5,6 +5,45 @@
 #include "system/interface/port.h"
 #include "arch/ARM/STM32/F4/clock.h"
 
+
+#ifndef GPIOC
+#define GPIOC nullptr
+#define RCC_AHB1ENR_GPIOCEN (0x00U)
+#endif
+#ifndef GPIOD
+#define GPIOD nullptr
+#define RCC_AHB1ENR_GPIODEN (0x00U)
+#endif
+#ifndef GPIOE
+#define GPIOE nullptr
+#define RCC_AHB1ENR_GPIOEEN (0x00U)
+#endif
+#ifndef GPIOF
+#define GPIOF nullptr
+#define RCC_AHB1ENR_GPIOFEN (0x00U)
+#endif
+#ifndef GPIOG
+#define GPIOG nullptr
+#define RCC_AHB1ENR_GPIOGEN (0x00U)
+#endif
+#ifndef GPIOH
+#define GPIOH nullptr
+#define RCC_AHB1ENR_GPIOHEN (0x00U)
+#endif
+#ifndef GPIOI
+#define GPIOI nullptr
+#define RCC_AHB1ENR_GPIOIEN (0x00U)
+#endif
+#ifndef GPIOJ
+#define GPIOJ nullptr
+#define RCC_AHB1ENR_GPIOJEN (0x00U)
+#endif
+#ifndef GPIOK
+#define GPIOK nullptr
+#define RCC_AHB1ENR_GPIOKEN (0x00U)
+#endif
+
+
 namespace arch {
 
 class port : public sys::port, public arch::clock {
@@ -12,7 +51,8 @@ class port : public sys::port, public arch::clock {
 public:
 	static inline GPIO_TypeDef *GPIO_PORT_MAP[] = {GPIOA, GPIOB, GPIOC,
 												   GPIOD, GPIOE, GPIOF,
-												   GPIOG, GPIOH, GPIOI};
+												   GPIOG, GPIOH, GPIOI,
+												   GPIOJ, GPIOK, nullptr};
 
 	static inline const uint32_t GPIO_PINS_NUM = 16;
 	static inline const uint32_t GPIO_PINS_MASK = 0xffffU;
@@ -71,10 +111,6 @@ public:
 	gpio_port(GPIO_PORT_MAP[port])
 	{}
 
-	inline GPIO_TypeDef *get_gpio_port() {
-		return gpio_port;
-	}
-
 // Interface periphery
 public:
 	sys::result_t deinit() override {
@@ -90,17 +126,27 @@ public:
 	}
 
 	sys::result_t init_output(pin_mask_t mask, sys::pin::driver_t drv, sys::pin::pull_t pull, sys::pin::speed_t speed) override {
-		if (set_speed(mask, speed) != sys::RES_OK)	return deinit(mask);
-		if (set_driver(mask, drv) != sys::RES_OK)	return deinit(mask);
-		if (set_pull(mask, pull) != sys::RES_OK)	return deinit(mask);
+		if (
+				(set_speed(mask, speed) != sys::RES_OK) ||
+				(set_driver(mask, drv) != sys::RES_OK) ||
+				(set_pull(mask, pull) != sys::RES_OK)
+		) {
+			deinit(mask);
+			return sys::RES_ERROR;
+		}
 
 		gpio_port->MODER = unpack_config_2bits(mask, gpio_port->MODER, GPIO_MODE_OUTPUT);
 		return sys::RES_OK;
 	}
 
 	sys::result_t init_input(pin_mask_t mask, sys::pin::pull_t pull, sys::pin::trigger_t trig) override {
-		if (set_pull(mask, pull) != sys::RES_OK)		return deinit(mask);
-		if (set_irq_trig(mask, trig) != sys::RES_OK)	return deinit(mask);
+		if (
+				(set_pull(mask, pull) != sys::RES_OK) ||
+				(set_irq_trig(mask, trig) != sys::RES_OK)
+		) {
+			deinit(mask);
+			return sys::RES_ERROR;
+		}
 
 		gpio_port->MODER = unpack_config_2bits(mask, gpio_port->MODER, GPIO_MODE_INPUT);
 		return sys::RES_OK;
@@ -112,9 +158,14 @@ public:
 	}
 
 	sys::result_t init_alt(pin_mask_t mask, sys::pin::alt_t af, sys::pin::driver_t drv, sys::pin::pull_t pull, sys::pin::speed_t speed) override {
-		if (set_speed(mask, speed) != sys::RES_OK)	return deinit(mask);
-		if (set_driver(mask, drv) != sys::RES_OK)	return deinit(mask);
-		if (set_pull(mask, pull) != sys::RES_OK)	return deinit(mask);
+		if (
+				(set_speed(mask, speed) != sys::RES_OK) ||
+				(set_driver(mask, drv) != sys::RES_OK) ||
+				(set_pull(mask, pull) != sys::RES_OK)
+		) {
+			deinit(mask);
+			return sys::RES_ERROR;
+		}
 
 		gpio_port->MODER = unpack_config_2bits(mask, gpio_port->MODER, GPIO_MODE_ALT);
 		return sys::RES_OK;
@@ -276,7 +327,7 @@ public:
 
 			case sys::pin::ALT_12:
 			case sys::pin::ALT_USB_FS_HS:
-			case sys::pin::ALT_SDIO:
+			case sys::pin::ALT_SDIO1:
 				af_cfg = GPIO_ALT_FN12;
 				break;
 
@@ -344,7 +395,7 @@ public:
 		}
 		else
 		{
-			enable_irq_clock();
+			enable_syscfg_clock();
 			for (int i = 0; i < 4; i++)
 				if ((mask >> (i*4)) & 0xFU)
 					SYSCFG->EXTICR[i] = unpack_config_4bits((mask >> (i*4)) & 0xFU,  SYSCFG->EXTICR[i], port_num);
@@ -391,7 +442,8 @@ public:
 
 
 private:
-	static void enable_irq_clock() {
+	// todo: Перенести отсюда
+	static void enable_syscfg_clock() {
 		__IO uint32_t tmpreg;
 		SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SYSCFGEN);
 		/* Delay after an RCC peripheral clock enabling */
@@ -399,6 +451,7 @@ private:
 		(void)tmpreg;
 	}
 
+	// todo: переделать включение тактирования
 	static uint32_t get_clock_en_bit(port_t port_num) {
 		switch (port_num) {
 			case PORT_A: return RCC_AHB1ENR_GPIOAEN;
@@ -410,6 +463,7 @@ private:
 			case PORT_G: return RCC_AHB1ENR_GPIOGEN;
 			case PORT_H: return RCC_AHB1ENR_GPIOHEN;
 			case PORT_I: return RCC_AHB1ENR_GPIOIEN;
+			// todo J,K
 			default:     return 0x00;
 		}
 	}
@@ -451,10 +505,6 @@ private:
 	port_t port_num;
 	GPIO_TypeDef *gpio_port;
 };
-
-inline arch::port::pin_mask_t operator | (arch::port::pin_t pin_a, arch::port::pin_t pin_b) {
-	return (arch::port::pin_mask_t)pin_a | (arch::port::pin_mask_t)pin_b;
-}
 
 }
 

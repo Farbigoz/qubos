@@ -1,14 +1,14 @@
 
 set(ARCH_INCLUDES
-    ${ARCH_INCLUDES}
+        ${ARCH_INCLUDES}
 
-    "${PROJECT_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Include"
+        "${PROJECT_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Include"
 )
 
 set(ARCH_SOURCES
-    ${ARCH_SOURCES}
+        ${ARCH_SOURCES}
 
-    "${PROJECT_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Source/Templates/system_stm32f4xx.c"
+        "${PROJECT_SOURCE_DIR}/third_party/cmsis_device_stm32f4/Source/Templates/system_stm32f4xx.c"
 )
 
 

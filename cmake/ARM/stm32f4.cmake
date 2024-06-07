@@ -1,4 +1,9 @@
 
+set(ARCH_COMPILE_DEFS
+        ${ARCH_COMPILE_DEFS}
+        "-DSTM32F4"
+)
+
 set(ARCH_INCLUDES
         ${ARCH_INCLUDES}
 

@@ -15,4 +15,4 @@ set(ARCH_SOURCES
 )
 
 
-include(${CMAKE_CURRENT_LIST_DIR}/stm32f3.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/stm32f1.cmake)

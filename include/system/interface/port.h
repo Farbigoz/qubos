@@ -21,6 +21,8 @@ public:
 		PORT_G,
 		PORT_H,
 		PORT_I,
+		PORT_J,
+		PORT_K,
 	} port_t;
 
 	typedef enum PIN_T : uint32_t {
@@ -69,8 +71,11 @@ public:
 	virtual sys::result_t init_alt(pin_mask_t mask, sys::pin::alt_t af, sys::pin::driver_t drv, sys::pin::pull_t pull, sys::pin::speed_t speed) = 0;
 
 	virtual sys::result_t set_driver(pin_mask_t mask, sys::pin::driver_t drv) = 0;
+	// ! Не во всех микроконтроллерах есть возможность установки PULL для выхода OPEN-DRAIN
 	virtual sys::result_t set_pull(pin_mask_t mask, sys::pin::pull_t pull) = 0;
+	// ! Не во всех микроконтроллерах есть возможность установки скорости пина
 	virtual sys::result_t set_speed(pin_mask_t mask, sys::pin::speed_t speed) = 0;
+	// ! Не во всех микроконтроллерах есть возможность назначения определённой функции пину, где-то она ограничена
 	virtual sys::result_t set_alt(pin_mask_t mask, sys::pin::alt_t af) = 0;
 	virtual sys::result_t set_irq_trig(pin_mask_t mask, sys::pin::trigger_t trig) = 0;
 
@@ -162,6 +167,9 @@ protected:
 	port() {}
 };
 
+inline sys::port::pin_mask_t operator | (sys::port::pin_t pin_a, sys::port::pin_t pin_b) {
+	return (sys::port::pin_mask_t) pin_a | (sys::port::pin_mask_t) pin_b;
+}
 
 }
 
