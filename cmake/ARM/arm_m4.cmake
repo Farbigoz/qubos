@@ -23,6 +23,7 @@ set(ARCH_COMPILE_OPTIONS
         "-fno-common"           # C++ compatibility
         "-fno-exceptions"       # Disable C++ exceptions
         "-fmessage-length=0"
+        "-ggdb3"
 
         "$<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>"
 

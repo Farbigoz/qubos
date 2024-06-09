@@ -125,6 +125,8 @@ public:
 		ALT_ETH,
 		ALT_DCMI,
 		ALT_LTDC,
+
+		_ALT_END,
 	} alt_t;
 
 // Signals
