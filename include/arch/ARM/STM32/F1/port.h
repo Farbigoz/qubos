@@ -36,6 +36,14 @@ public:
 												   GPIOG, nullptr, nullptr,
 												   nullptr, nullptr, nullptr};
 
+	static inline rcc::APB2::periphery_clock_t GPIO_CLK[] = {rcc::APB2::CLK_GPIOA,
+															 rcc::APB2::CLK_GPIOB,
+															 rcc::APB2::CLK_GPIOC,
+															 rcc::APB2::CLK_GPIOD,
+															 rcc::APB2::CLK_GPIOE,
+															 rcc::APB2::CLK_GPIOF,
+															 rcc::APB2::CLK_GPIOG};
+
 	static inline const uint32_t GPIO_PINS_NUM = 16;
 	static inline const uint32_t GPIO_PINS_MASK = 0xffffU;
 
@@ -73,17 +81,15 @@ public:
 
 public:
 	uint32_t get_clock_freq() override {
-		return 0; // todo
+		return rcc::APB2::get_clk();
 	}
 
 	inline sys::result_t enable_clock() override {
-		// todo: rework
-		return enable_clock(port_num);
+		return rcc::APB2::enable(GPIO_CLK[port_num]);
 	}
 
 	sys::result_t disable_clock() override {
-		// todo:
-		return sys::RES_OK;
+		return rcc::APB2::disable(GPIO_CLK[port_num]);
 	}
 
 // Interface sys::periphery
@@ -271,7 +277,8 @@ public:
 		}
 		else
 		{
-			enable_afio_clock();
+			rcc::APB2::enable(rcc::APB2::CLK_AFIO);
+
 			for (int i = 0; i < 4; i++)
 				if ((mask >> (i*4)) & 0xFU)
 					AFIO->EXTICR[i] = unpack_config_4bits((mask >> (i*4)) & 0xFU,  AFIO->EXTICR[i], port_num);
@@ -324,43 +331,6 @@ public:
 	}
 
 private:
-	// todo: вынести
-	static void enable_afio_clock() {
-		__IO uint32_t tmpreg;
-		SET_BIT(RCC->APB2ENR, RCC_APB2ENR_AFIOEN);
-		/* Delay after an RCC peripheral clock enabling */
-		tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_AFIOEN);
-		(void)(tmpreg);
-	}
-
-	// todo: вынести в интерфейс периферии
-	static sys::result_t enable_clock(sys::port::port_t port_num) {
-		uint32_t en_bit;
-
-		switch (port_num) {
-			case sys::port::PORT_A: en_bit = RCC_APB2ENR_IOPAEN; break;
-			case sys::port::PORT_B: en_bit = RCC_APB2ENR_IOPBEN; break;
-			case sys::port::PORT_C: en_bit = RCC_APB2ENR_IOPCEN; break;
-			case sys::port::PORT_D: en_bit = RCC_APB2ENR_IOPDEN; break;
-			case sys::port::PORT_E: en_bit = RCC_APB2ENR_IOPEEN; break;
-			case sys::port::PORT_F: en_bit = RCC_APB2ENR_IOPFEN; break;
-			case sys::port::PORT_G: en_bit = RCC_APB2ENR_IOPGEN; break;
-			default:
-				return sys::RES_ERROR;
-		}
-
-		if (en_bit == 0)
-			return sys::RES_ERROR;
-
-		__IO uint32_t tmpreg;
-		SET_BIT(RCC->APB2ENR, en_bit);
-		/* Delay after an RCC peripheral clock enabling */
-		tmpreg = READ_BIT(RCC->APB2ENR, en_bit);
-		(void)(tmpreg);
-
-		return sys::RES_OK;
-	}
-
 	static uint32_t unpack_config_1bits(uint32_t mask, uint32_t value, uint8_t config) {
 		return (value & ~mask) | mask * config;
 	}

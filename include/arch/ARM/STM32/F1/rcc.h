@@ -13,6 +13,35 @@
 #define PLL_ENABLE_WAIT     0xffff
 
 
+#ifndef RCC_APB2ENR_IOPCEN
+#define RCC_APB2ENR_IOPCEN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_IOPDEN
+#define RCC_APB2ENR_IOPDEN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_IOPEEN
+#define RCC_APB2ENR_IOPEEN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_IOPFEN
+#define RCC_APB2ENR_IOPFEN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_IOPGEN
+#define RCC_APB2ENR_IOPGEN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_ADC3EN
+#define RCC_APB2ENR_ADC3EN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_TIM9EN
+#define RCC_APB2ENR_TIM9EN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_TIM10EN
+#define RCC_APB2ENR_TIM10EN (0x00U)
+#endif
+#ifndef RCC_APB2ENR_TIM11EN
+#define RCC_APB2ENR_TIM11EN (0x00U)
+#endif
+
+
 
 namespace arch {
 	class rcc {
@@ -429,6 +458,17 @@ namespace arch {
 				DIV_512 = RCC_CFGR_HPRE_DIV512
 			} div_t;
 
+			typedef enum {
+				CLK_DMA1       = RCC_AHBENR_DMA1EN,
+				CLK_DMA2       = RCC_AHBENR_DMA2EN,
+				CLK_SRAM       = RCC_AHBENR_SRAMEN,
+				CLK_CRC        = RCC_AHBENR_CRCEN,
+				CLK_OTG        = RCC_AHBENR_OTGFSEN,
+				CLK_ETH_MAC    = RCC_AHBENR_ETHMACEN,
+				CLK_ETH_MAC_TX = RCC_AHBENR_ETHMACTXEN,
+				CLK_ETH_MAC_RX = RCC_AHBENR_ETHMACRXEN
+			} periphery_clock_t;
+
 		public:
 			static sys::result_t set_div(div_t d) {
 				SET_BIT(RCC->CFGR, d);
@@ -454,6 +494,16 @@ namespace arch {
 					default: return 0;
 				}
 			}
+
+			static sys::result_t enable(periphery_clock_t clk) {
+				SET_BIT(RCC->AHBENR, clk);
+				return READ_BIT(RCC->AHBENR, clk) == RESET ? sys::RES_ERROR : sys::RES_OK;
+			}
+
+			static sys::result_t disable(periphery_clock_t clk) {
+				CLEAR_BIT(RCC->AHBENR, clk);
+				return READ_BIT(RCC->AHBENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
+			}
 		};
 
 		class APB1 {
@@ -465,6 +515,29 @@ namespace arch {
 				DIV_8  = RCC_CFGR_PPRE1_DIV8,
 				DIV_16 = RCC_CFGR_PPRE1_DIV16,
 			} div_t;
+
+			typedef enum {
+				CLK_TIM2   = RCC_APB1ENR_TIM2EN,
+				CLK_TIM3   = RCC_APB1ENR_TIM3EN,
+				CLK_TIM4   = RCC_APB1ENR_TIM4EN,
+				CLK_TIM5   = RCC_APB1ENR_TIM5EN,
+				CLK_TIM6   = RCC_APB1ENR_TIM6EN,
+				CLK_TIM7   = RCC_APB1ENR_TIM7EN,
+				CLK_WWDGEN = RCC_APB1ENR_WWDGEN,
+				CLK_SPI2   = RCC_APB1ENR_SPI2EN,
+				CLK_SPI3   = RCC_APB1ENR_SPI3EN,
+				CLK_UART2  = RCC_APB1ENR_USART2EN,
+				CLK_UART3  = RCC_APB1ENR_USART3EN,
+				CLK_UART4  = RCC_APB1ENR_UART4EN,
+				CLK_UART5  = RCC_APB1ENR_UART5EN,
+				CLK_I2C1   = RCC_APB1ENR_I2C1EN,
+				CLK_I2C2   = RCC_APB1ENR_I2C2EN,
+				CLK_CAN1   = RCC_APB1ENR_CAN1EN,
+				CLK_CAN2   = RCC_APB1ENR_CAN2EN,
+				CLK_BKP    = RCC_APB1ENR_BKPEN,
+				CLK_PWR    = RCC_APB1ENR_PWREN,
+				CLK_DAC    = RCC_APB1ENR_DACEN
+			} periphery_clock_t;
 
 		public:
 			static sys::result_t set_div(div_t d) {
@@ -494,6 +567,16 @@ namespace arch {
 				else
 					return clk;
 			}
+
+			static sys::result_t enable(periphery_clock_t clk) {
+				SET_BIT(RCC->APB1ENR, clk);
+				return READ_BIT(RCC->APB1ENR, clk) == RESET ? sys::RES_ERROR : sys::RES_OK;
+			}
+
+			static sys::result_t disable(periphery_clock_t clk) {
+				CLEAR_BIT(RCC->APB1ENR, clk);
+				return READ_BIT(RCC->APB1ENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
+			}
 		};
 
 		class APB2 {
@@ -512,6 +595,26 @@ namespace arch {
 				ADC_DIV_6 = RCC_CFGR_ADCPRE_DIV6,
 				ADC_DIV_8 = RCC_CFGR_ADCPRE_DIV8,
 			} adc_div_t;
+
+			typedef enum {
+				CLK_AFIO  = RCC_APB2ENR_AFIOEN,
+				CLK_GPIOA = RCC_APB2ENR_IOPAEN,
+				CLK_GPIOB = RCC_APB2ENR_IOPBEN,
+				CLK_GPIOC = RCC_APB2ENR_IOPCEN,
+				CLK_GPIOD = RCC_APB2ENR_IOPDEN,
+				CLK_GPIOE = RCC_APB2ENR_IOPEEN,
+				CLK_GPIOF = RCC_APB2ENR_IOPFEN,
+				CLK_GPIOG = RCC_APB2ENR_IOPGEN,
+				CLK_ADC1  = RCC_APB2ENR_ADC1EN,
+				CLK_ADC2  = RCC_APB2ENR_ADC2EN,
+				CLK_TIM1  = RCC_APB2ENR_TIM1EN,
+				CLK_SPI1  = RCC_APB2ENR_SPI1EN,
+				CLK_UART1 = RCC_APB2ENR_USART1EN,
+				CLK_ADC3  = RCC_APB2ENR_ADC3EN,
+				CLK_TIM9  = RCC_APB2ENR_TIM9EN,
+				CLK_TIM10 = RCC_APB2ENR_TIM10EN,
+				CLK_TIM11 = RCC_APB2ENR_TIM11EN,
+			} periphery_clock_t;
 
 		public:
 			static sys::result_t set_div(div_t d) {
@@ -554,6 +657,16 @@ namespace arch {
 				uint32_t clk = get_clk();
 				adc_div_t div = get_adc_div();
 				return clk / (2 * (1 + (div >> RCC_CFGR_ADCPRE_Pos)));
+			}
+
+			static sys::result_t enable(periphery_clock_t clk) {
+				SET_BIT(RCC->APB2ENR, clk);
+				return READ_BIT(RCC->APB2ENR, clk) == RESET ? sys::RES_ERROR : sys::RES_OK;
+			}
+
+			static sys::result_t disable(periphery_clock_t clk) {
+				CLEAR_BIT(RCC->APB2ENR, clk);
+				return READ_BIT(RCC->APB2ENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
 			}
 		};
 	};
