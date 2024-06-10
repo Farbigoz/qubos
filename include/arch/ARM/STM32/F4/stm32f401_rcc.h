@@ -1,73 +1,19 @@
 #ifndef STM32F401_RCC_H
 #define STM32F401_RCC_H
 
-#include "system/system.h"
 #include "stm32f4xx.h"
+#include "system/system.h"
 
 
 namespace arch {
-	/*
-	class osc {
-	public:
-		virtual sys::result_t set_freq(uint32_t new_freq) {
-			freq = new_freq;
-			return sys::RES_OK;
-		}
-
-		virtual uint32_t get_freq() {
-			return freq;
-		}
-
-	protected:
-		osc(uint32_t freq)
-		:
-		freq(freq)
-		{}
-
-	protected:
-		uint32_t freq;
-	};
-	*/
-
 	class rcc {
 	public:
 		class HSI;
 		class HSE;
-		class SW;
+		class SYSCLK;
 		class PLL;
 
 	public:
-		/*
-		class HSI : public osc {
-		public:
-			HSI()
-			:
-			osc(CLK)
-			{}
-
-		private:
-			using osc::set_freq;
-
-		private:
-			static const uint32_t CLK = 8000000;
-		};
-
-
-		class HSE : public osc {
-		public:
-			HSE(uint32_t clk)
-			:
-			osc(clk)
-			{}
-		};
-
-
-		class SW {
-		public:
-			sys::result_t set_source()
-		};
-		 */
-
 		class HSI {
 		public:
 			static const uint32_t CLK_FREQ = 16000000;
@@ -122,7 +68,7 @@ namespace arch {
 			}
 		};
 
-		class SW {
+		class SYSCLK {
 		public:
 			typedef enum {
 				SRC_HSI = RCC_CFGR_SW_HSI,
@@ -139,6 +85,8 @@ namespace arch {
 			static inline source_t get_source() {
 				return (source_t)READ_BIT(RCC->CFGR, RCC_CFGR_SW);
 			}
+
+			// todo: CSS
 		};
 
 		class PLL {
@@ -175,7 +123,7 @@ namespace arch {
 			}
 
 			static inline sys::result_t disable() {
-				if (SW::get_source() == SW::SRC_PLL)
+				if (SYSCLK::get_source() == SYSCLK::SRC_PLL)
 					return sys::RES_ERROR;
 				CLEAR_BIT(RCC->CR, RCC_CR_PLLON);
 				return sys::RES_OK;
@@ -219,7 +167,7 @@ void test_rcc() {
 
 	(*(__IO uint8_t *)(0x40023C00U) = (uint8_t)(FLASH_ACR_LATENCY_4WS));
 
-	RESULT = arch::rcc::SW::set_source(arch::rcc::SW::SRC_HSI);
+	RESULT = arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_HSI);
 
 	RESULT = arch::rcc::HSE::set_freq(25000000);
 	RESULT = arch::rcc::HSE::enable();

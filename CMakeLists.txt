@@ -9,9 +9,9 @@ project(
         LANGUAGES C CXX ASM
 )
 
-include(${CMAKE_SOURCE_DIR}/cmake/ARM/stm32f401.cmake)
+# include(${CMAKE_SOURCE_DIR}/cmake/ARM/stm32f401.cmake)
 # include(${CMAKE_SOURCE_DIR}/cmake/ARM/stm32f405.cmake)
-# include(${CMAKE_SOURCE_DIR}/cmake/ARM/stm32f107.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/ARM/stm32f107.cmake)
 
 add_library(system STATIC)
 
@@ -51,4 +51,5 @@ target_link_libraries(system
 
 
 
-add_subdirectory(examples/example)
+# add_subdirectory(examples/example)
+add_subdirectory(examples/example_stm32f1)
