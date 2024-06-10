@@ -1,5 +1,5 @@
-#ifndef SYSTEM_INTERFACE_I2C_H
-#define SYSTEM_INTERFACE_I2C_H
+#ifndef SYSTEM_INTERFACE_IOMUX_H
+#define SYSTEM_INTERFACE_IOMUX_H
 
 #include "system/system.h"
 #include "system/interface/periphery.h"
@@ -25,11 +25,11 @@ public:
 		// REMAP_TIM7,
 		// REMAP_TIM8,
 		REMAP_TIM9,
-		// REMAP_TIM10,
-		// REMAP_TIM11,
+		REMAP_TIM10,
+		REMAP_TIM11,
 		// REMAP_TIM12,
-		// REMAP_TIM13,
-		// REMAP_TIM14,
+		REMAP_TIM13,
+		REMAP_TIM14,
 		// REMAP_TIM15,
 		// REMAP_TIM16,
 		// REMAP_TIM17,
@@ -70,19 +70,39 @@ public:
 		// REMAP_USB_HS,
 		// REMAP_USB_FS_HS,
 
+		REMAP_ETH,
+
 		REMAP_CAN1,
 		REMAP_CAN2,
 
 		REMAP_SDIO2,
 
-		RAMAP_EMAC_PTP_PPS,
+		REMAP_EMAC_PTP_PPS,
 		REMAP_EMAC_MII_RMII
 
 	} alt_remap_t;
 
+	typedef enum {
+		REMAP_NUM_0,
+		REMAP_NUM_1,
+		REMAP_NUM_2,
+		REMAP_NUM_3,
+		REMAP_NUM_5,
+		REMAP_NUM_6,
+		REMAP_NUM_7,
+	} remap_num_t;
+
 public:
+	virtual bool support() = 0;
+
+	virtual sys::result_t set_remap(alt_remap_t alt, remap_num_t num) = 0;
+	virtual remap_num_t get_remap_num(alt_remap_t alt) = 0;
+
+protected:
+	iomux() {}
+
 };
 }
 
 
-#endif /* SYSTEM_INTERFACE_I2C_H */
+#endif /* SYSTEM_INTERFACE_IOMUX_H */

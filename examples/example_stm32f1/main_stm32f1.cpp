@@ -12,15 +12,21 @@
 #include "system/interface/flash.h"
 #include "system/interface/tim.h"
 
+#include "arch/ARM/STM32/F1/rcc.h"
 #include "arch/ARM/STM32/F1/port.h"
 #include "arch/ARM/STM32/F1/pin.h"
-#include "arch/ARM/STM32/F1/rcc.h"
+#include "arch/ARM/STM32/F1/iomux.h"
 
 arch::port		PORT_E(sys::port::PORT_E);
+arch::port		PORT_D(sys::port::PORT_D);
+
 arch::pin		PIN_LED1(PORT_E, sys::port::PIN_0);
 arch::pin		PIN_LED2(PORT_E, sys::port::PIN_1);
 arch::pin		PIN_LED3(PORT_E, sys::port::PIN_14);
 arch::pin		PIN_LED4(PORT_E, sys::port::PIN_15);
+
+arch::pin		PIN_UART2_TX(PORT_D, sys::port::PIN_5);
+arch::pin		PIN_UART2_RX(PORT_D, sys::port::PIN_6);
 
 void delay() {
 	for (int i = 0; i < 100000; i++);
@@ -32,34 +38,38 @@ int main() {
 
 	SET_BIT(FLASH->ACR, FLASH_ACR_LATENCY_2);
 
-	arch::rcc::HSE::set_freq(25000000);
-	arch::rcc::PREDIV2::set_div(5);
-	arch::rcc::PLL2::set_mult(arch::rcc::PLL2::MULT_8);
-	arch::rcc::PREDIV1::set_source(arch::rcc::PREDIV1::SRC_PLL2);
-	arch::rcc::PREDIV1::set_div(5);
-	arch::rcc::PLL::set_source(arch::rcc::PLL::SRC_PREDIV1);
-	arch::rcc::PLL::set_mult(arch::rcc::PLL::MULT_9);
+	res = arch::rcc::HSE::set_freq(25000000);
+	res = arch::rcc::PREDIV2::set_div(5);
+	res = arch::rcc::PLL2::set_mult(arch::rcc::PLL2::MULT_8);
+	res = arch::rcc::PREDIV1::set_source(arch::rcc::PREDIV1::SRC_PLL2);
+	res = arch::rcc::PREDIV1::set_div(5);
+	res = arch::rcc::PLL::set_source(arch::rcc::PLL::SRC_PREDIV1);
+	res = arch::rcc::PLL::set_mult(arch::rcc::PLL::MULT_9);
 
-	arch::rcc::MCO::set_output(arch::rcc::MCO::OUT_XT1);
+	res = arch::rcc::MCO::set_output(arch::rcc::MCO::OUT_XT1);
 
-	arch::rcc::APB1::set_div(arch::rcc::APB1::DIV_2);
-	arch::rcc::APB2::set_adc_div(arch::rcc::APB2::ADC_DIV_6);
+	res = arch::rcc::APB1::set_div(arch::rcc::APB1::DIV_2);
+	res = arch::rcc::APB2::set_adc_div(arch::rcc::APB2::ADC_DIV_6);
 
-	arch::rcc::HSE::enable();
-	arch::rcc::PLL2::enable();
-	arch::rcc::PLL::enable();
+	res = arch::rcc::HSE::enable();
+	res = arch::rcc::PLL2::enable();
+	res = arch::rcc::PLL::enable();
 
-	arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_PLL);
+	res = arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_PLL);
 
-	clk = arch::rcc::SYSCLK::get_clk();
-	clk = arch::rcc::APB1::get_clk();
-	clk = arch::rcc::APB1::get_tim_clk();
-	clk = arch::rcc::APB2::get_clk();
-	clk = arch::rcc::APB2::get_tim_clk();
-	clk = arch::rcc::APB2::get_adc_clk();
+	//clk = arch::rcc::SYSCLK::get_clk();
+	//clk = arch::rcc::APB1::get_clk();
+	//clk = arch::rcc::APB1::get_tim_clk();
+	//clk = arch::rcc::APB2::get_clk();
+	//clk = arch::rcc::APB2::get_tim_clk();
+	//clk = arch::rcc::APB2::get_adc_clk();
 
+	res = arch::iomux().enable_clock();
+	res = arch::iomux().set_remap(sys::iomux::REMAP_UART2, sys::iomux::REMAP_NUM_1);
 
-
+	PORT_D.enable_clock();
+	PIN_UART2_TX.init_alt(sys::pin::ALT_NONE, sys::pin::DRV_PUSH_PULL, sys::pin::SPEED_VERY_FAST);
+	PIN_UART2_RX.init_input(sys::pin::PULL_NONE);
 
 
 

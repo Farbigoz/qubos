@@ -11,6 +11,13 @@ namespace sys {
 class iuart : public periphery_transceiver {
 // Enums
 public:
+	typedef enum MODE_T {
+		MODE_FULL_DUPLEX,
+		MODE_HALF_DUPLEX,
+		MODE_TX_ONLY,
+		MODE_RX_ONLY,
+	} mode_t;
+
 	typedef enum STATE_T {
 
 	} state_t;
