@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_PIN_H
 #define SYSTEM_INTERFACE_PIN_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/signal.h"
 #include "system/interface/periphery.h"
 

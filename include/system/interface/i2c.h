@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_I2C_H
 #define SYSTEM_INTERFACE_I2C_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/signal.h"
 #include "system/interface/periphery.h"
 #include "system/interface/dma.h"
@@ -40,14 +40,14 @@ public:
 
 // Signals
 public:
-	typedef Signal<iuart&>			signal_tx_cplt_t;
-	typedef Signal<iuart&>			signal_tx_half_cplt_t;
-	typedef Signal<iuart&>			signal_rx_cplt_t;
-	typedef Signal<iuart&>			signal_rx_half_cplt_t;
-	typedef Signal<iuart&>			signal_abort_tx_t;
-	typedef Signal<iuart&>			signal_abort_rx_t;
-	typedef Signal<iuart&>			signal_abort_t;
-	typedef Signal<iuart&, error_t>	signal_error_t;
+	typedef Signal<uart&>			signal_tx_cplt_t;
+	typedef Signal<uart&>			signal_tx_half_cplt_t;
+	typedef Signal<uart&>			signal_rx_cplt_t;
+	typedef Signal<uart&>			signal_rx_half_cplt_t;
+	typedef Signal<uart&>			signal_abort_tx_t;
+	typedef Signal<uart&>			signal_abort_rx_t;
+	typedef Signal<uart&>			signal_abort_t;
+	typedef Signal<uart&, error_t>	signal_error_t;
 
 
 // Methods

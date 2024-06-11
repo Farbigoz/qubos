@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_FLASH_H
 #define SYSTEM_INTERFACE_FLASH_H
 
-#include "system/system.h"
+#include "system/types.h"
 
 namespace sys {
 	class iflash {

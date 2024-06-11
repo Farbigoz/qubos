@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_ONEWIRE_H
 #define SYSTEM_INTERFACE_ONEWIRE_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/periphery.h"
 #include "system/signal.h"
 

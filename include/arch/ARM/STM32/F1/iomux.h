@@ -5,7 +5,7 @@
 
 #include "arch/ARM/STM32/F1/rcc.h"
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/interface/iomux.h"
 
 
@@ -115,7 +115,7 @@ public:
 		if (get_cfg(alt, &pos, &mask, &reg) == sys::RES_ERROR)
 			return sys::RES_ERROR;
 
-		if (num & (~mask))
+		if ((num << pos) & (~mask))
 			return sys::RES_ERROR;
 
 		SET_BIT(*reg, num << pos);

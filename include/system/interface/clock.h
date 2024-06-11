@@ -1,7 +1,7 @@
 #ifndef SYSTEM_CLOCK_H
 #define SYSTEM_CLOCK_H
 
-#include "system/system.h"
+#include "system/types.h"
 
 
 namespace sys {

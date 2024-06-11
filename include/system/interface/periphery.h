@@ -1,7 +1,7 @@
 #ifndef SYSTEM_PERIPHERY_H
 #define SYSTEM_PERIPHERY_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/interface/clock.h"
 
 

@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_IOMUX_H
 #define SYSTEM_INTERFACE_IOMUX_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/interface/periphery.h"
 
 

@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_FS_H
 #define SYSTEM_INTERFACE_FS_H
 
-#include "system/system.h"
+#include "system/types.h"
 
 namespace sys {
 

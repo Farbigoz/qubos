@@ -2,7 +2,7 @@
 #define STM32F1_RCC_H
 
 #include "stm32f1xx.h"
-#include "system/system.h"
+#include "system/types.h"
 
 
 #define HSI_FREQ            8000000
@@ -48,15 +48,25 @@ namespace arch {
 	public:
 		class HSI;
 		class HSE;
-		class SYSCLK;
 		class PLL;
 		class PLL2;
 		class PLL3;
 		class PREDIV1;
 		class PREDIV2;
+		class SYSCLK;
 		class AHB;
+		class HCLK;
+		class FCLK;
+		class CORTEX_TIM_CLK;
 		class APB1;
 		class APB2;
+
+	public:
+		typedef enum {
+			BUS_AHB,
+			BUS_APB1,
+			BUS_APB2
+		} bus_t;
 
 	public:
 		class HSI {
@@ -503,6 +513,27 @@ namespace arch {
 			static sys::result_t disable(periphery_clock_t clk) {
 				CLEAR_BIT(RCC->AHBENR, clk);
 				return READ_BIT(RCC->AHBENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
+			}
+		};
+
+		class HCLK {
+		public:
+			inline static uint32_t get_clk() {
+				return AHB::get_clk();
+			}
+		};
+
+		class FCLK {
+		public:
+			inline static uint32_t get_clk() {
+				return AHB::get_clk();
+			}
+		};
+
+		class CORTEX_TIM_CLK {
+		public:
+			inline static uint32_t get_clk() {
+				return AHB::get_clk() / 8;
 			}
 		};
 

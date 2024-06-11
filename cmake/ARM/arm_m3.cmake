@@ -6,6 +6,7 @@ set(ARCH_COMPILE_DEFS
         ${ARCH_COMPILE_DEFS}
 
         # CMSIS DSP
+        "-DARM_CORTEX_M3"
         "-DARM_MATH_CM3"
         "-DARM_MATH_MATRIX_CHECK"
         "-DARM_MATH_ROUNDING"

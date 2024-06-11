@@ -1,7 +1,7 @@
 #ifndef SYSTEM_INTERFACE_DAC_H
 #define SYSTEM_INTERFACE_DAC_H
 
-#include "system/system.h"
+#include "system/types.h"
 #include "system/signal.h"
 #include "system/interface/periphery.h"
 #include "system/interface/dma.h"
