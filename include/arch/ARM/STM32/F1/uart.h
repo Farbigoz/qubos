@@ -3,7 +3,9 @@
 
 #include "stm32f1xx.h"
 #include "arch/ARM/STM32/F1/rcc.h"
+#include "arch/ARM/STM32/F1/dma.h"
 #include "system/types.h"
+#include "system/system.h"
 #include "system/interface/uart.h"
 
 
@@ -57,9 +59,9 @@ public:
 public:
 	uint32_t get_clock_freq() override {
 		switch (BUS_MAP[uart_num]) {
-			case rcc::BUS_APB1: return rcc::APB1::get_clk();
-			case rcc::BUS_APB2: return rcc::APB2::get_clk();
-			case rcc::BUS_AHB:  return rcc::AHB::get_clk();
+			case rcc::BUS_APB1: return rcc::APB1::calc_clk();
+			case rcc::BUS_APB2: return rcc::APB2::calc_clk();
+			case rcc::BUS_AHB:  return rcc::AHB::calc_clk();
 			default: return 0;
 		}
 	}
@@ -88,6 +90,46 @@ public:
 
 // periphery
 public:
+	sys::result_t set_tx_irq_prior(uint32_t) {
+
+	}
+	sys::result_t set_rx_irq_prior(uint32_t) {
+
+	}
+
+	uint32_t get_tx_irq_prior() {
+
+	}
+	uint32_t get_rx_irq_prior() {
+
+	}
+
+	bool tx_busy() {
+
+	}
+	bool rx_busy() {
+
+	}
+
+	bool is_tx_irq() {
+
+	}
+	bool is_rx_irq() {
+
+	}
+
+	sys::result_t enable_tx_irq() {
+
+	}
+	sys::result_t enable_rx_irq() {
+
+	}
+	sys::result_t disable_tx_irq() {
+
+	}
+	sys::result_t disable_rx_irq() {
+
+	}
 
 // uart
 public:
@@ -253,23 +295,7 @@ public:
 	}
 
 	state_t get_state() override {
-		state_t state = STATE_NONE;
-
-		// Включён
-		if ((READ_REG(uart_def->CR1) & USART_CR1_UE) != RESET)
-			state |= STATE_ENABLED;
-
-		// Линия IDLE обнаружена
-		if ((READ_REG(uart_def->SR) & USART_SR_IDLE) != RESET)
-			state |= STATE_IDLE;
-
-		// Приём включён и регистр приёма пуст
-		if (((READ_REG(uart_def->CR1) & USART_CR1_RE) != RESET) & ((READ_REG(uart_def->SR) & USART_SR_RXNE) == RESET))
-			state |= STATE_RX_BUSY;
-
-		// Передача включена и не завершена
-		if (((READ_REG(uart_def->CR1) & USART_CR1_TE) != RESET) & ((READ_REG(uart_def->SR) & USART_SR_TC) == RESET))
-			state |= STATE_TX_BUSY;
+		state_t state = get_state_without_error();
 
 		if (get_error() != ERROR_NONE)
 			state |= STATE_ERROR;
@@ -307,13 +333,70 @@ public:
 		return (READ_REG(uart_def->CR1) & USART_CR1_UE) == RESET ? sys::RES_OK : sys::RES_ERROR;
 	}
 
-
-
-	sys::result_t transmit(const uint8_t *p_data, size_t size, uint32_t timeout) override {
-
+	sys::result_t reset_errors() override {
+		volatile uint32_t r;
+		r = READ_REG(uart_def->SR);
+		r = READ_REG(uart_def->DR);
+		return get_error() == ERROR_NONE ? sys::RES_OK : sys::RES_ERROR;
 	}
 
-	sys::result_t receive(const uint8_t *p_data, size_t size, uint32_t timeout) override {
+
+	sys::result_t transmit(const uint8_t *p_data, size_t size, size_t *tx_len, sys::time_ms_t timeout) override {
+		if (!sys::has_sys_timer())
+			return sys::RES_NO_SYS_TIM;
+
+		state_t state = get_state();
+		if ((state & STATE_ENABLED) == RESET)
+			return sys::RES_NOT_ENABLED;
+		if (state & STATE_ERROR)
+			if (reset_errors() != sys::RES_OK)
+				return sys::RES_ERROR;
+		if (state & STATE_TX_BUSY)
+			return sys::RES_BUSY;
+
+		// todo: freertos semphr lock
+
+		const uint8_t *pdata8bits;
+		const uint16_t *pdata16bits;
+		sys::time_ms_t time_start = sys::time_ms();
+
+		if (get_length() == LENGTH_8_BIT)
+		{
+			pdata8bits = p_data;
+			pdata16bits = nullptr;
+		}
+		else
+		{
+			pdata8bits = nullptr;
+			pdata16bits = reinterpret_cast<const uint16_t*>(p_data);
+		}
+
+		while (size > 0) {
+			if (pdata8bits == nullptr)
+			{
+				uart_def->DR = *pdata16bits & 0x1FFU;
+				pdata16bits++;
+			}
+			else
+			{
+				uart_def->DR = *pdata8bits;
+				pdata8bits++;
+			}
+
+			while (get_state_without_error() & STATE_TX_BUSY)
+				if ((time_start + timeout) <= sys::time_ms())
+					return sys::RES_TIMEOUT;
+
+			size--;
+			(*tx_len)++;
+		}
+
+		return sys::RES_OK;
+	}
+
+	sys::result_t receive(const uint8_t *p_data, size_t size, size_t *rx_len, sys::time_ms_t timeout) override {
+		if (!sys::has_sys_timer())
+			return sys::RES_NO_SYS_TIM;
 
 	}
 
@@ -330,8 +413,75 @@ public:
 	}
 
 
+	sys::result_t transmit_it(const uint8_t *p_data, size_t size) override {
+
+	}
+
+	sys::result_t receive_it(const uint8_t *p_data, size_t size) override {
+
+	}
+
+	sys::result_t abort_it() override {
+
+	}
+
+	sys::result_t abort_transmit_it() override {
+
+	}
+
+	sys::result_t abort_receive_it() override {
+
+	}
+
+
+	sys::result_t transmit_dma(const uint8_t *p_data, size_t size) override {
+
+	}
+
+	sys::result_t receive_dma(const uint8_t *p_data, size_t size) override {
+
+	}
+
+	sys::result_t abort_dma() override {
+
+	}
+
+	sys::result_t abort_transmit_dma() override {
+
+	}
+
+	sys::result_t abort_receive_dma() override {
+
+	}
+
 
 private:
+	state_t get_state_without_error() {
+		state_t state = STATE_NONE;
+
+		// Включён
+		if ((READ_REG(uart_def->CR1) & USART_CR1_UE) != RESET)
+			state |= STATE_ENABLED;
+
+		// Линия IDLE обнаружена
+		if ((READ_REG(uart_def->SR) & USART_SR_IDLE) != RESET)
+			state |= STATE_IDLE;
+
+		// Приём включён и регистр приёма пуст
+		if (((READ_REG(uart_def->CR1) & USART_CR1_RE) != RESET) & ((READ_REG(uart_def->SR) & USART_SR_RXNE) == RESET))
+			state |= STATE_RX_BUSY;
+
+		// Передача включена и не завершена
+		if (((READ_REG(uart_def->CR1) & USART_CR1_TE) != RESET) & ((READ_REG(uart_def->SR) & USART_SR_TC) == RESET))
+			state |= STATE_TX_BUSY;
+
+		return state;
+	}
+
+private:
+	arch::irq::irq_signal_t::SlotWithCtx irq_tx_slot;
+	arch::irq::irq_signal_t::SlotWithCtx irq_rx_slot;
+
 	uint32_t baud;
 	uart_t uart_num;
 	USART_TypeDef *uart_def;

@@ -9,14 +9,20 @@
 namespace sys {
 
 	typedef enum {
-		RES_TIMEOUT	= -3,
-		RES_BUSY	= -2,
-		RES_ERROR	= -1,
-		RES_NONE	= 0,
-		RES_OK		= 1,
+		RES_UNEXPECTED	= -1000,
+		RES_NO_SYS_TIM,
+		RES_TIMEOUT,
+		RES_BUSY,
+		RES_NOT_ENABLED,
+		RES_ERROR,
+		RES_NONE		= 0,
+		RES_OK
 	} result_t;
 
 	typedef void (*callback_t)(void *context);
+
+	typedef uint64_t time_msk_t;
+	typedef uint64_t time_ms_t;
 
 }
 

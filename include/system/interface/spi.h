@@ -88,8 +88,8 @@ public:
 	virtual result_t set_bit_order(bit_order_t) = 0;
 	virtual result_t set_clk_phase(clock_phase_t) = 0;
 	virtual result_t set_clk_polarity(clock_polarity_t) = 0;
-	virtual result_t set_tx_dma(idma*) = 0;
-	virtual result_t set_rx_dma(idma*) = 0;
+	virtual result_t set_tx_dma(dma*) = 0;
+	virtual result_t set_rx_dma(dma*) = 0;
 
 	virtual data_size_t get_data_size() = 0;
 	virtual bit_order_t get_bit_order() = 0;

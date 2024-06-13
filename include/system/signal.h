@@ -18,7 +18,7 @@ namespace sys {
 		typedef void (*slot_with_ctx_fn_t)(void *, Args...);
 
 	public:
-		Signal()
+		constexpr Signal()
 		{}
 
 		void emit(Args... args) {

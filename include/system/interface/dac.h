@@ -54,7 +54,7 @@ public:
 	virtual result_t set_ext_trigger(ext_trigger_t) = 0;
 	virtual result_t set_alignment(alignment_t) = 0;
 	virtual result_t set_resolution(resolution_t) = 0;
-	virtual result_t set_dma(idma*) = 0;
+	virtual result_t set_dma(dma*) = 0;
 	virtual result_t set_value() = 0;
 
 	virtual ext_trigger_t get_ext_trigger() = 0;

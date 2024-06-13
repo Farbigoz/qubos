@@ -42,6 +42,8 @@
 #endif
 
 
+// todo: заменить метод calc_clk() на переменную CLK_FREQ которая пересчитывается после любых изменений
+
 
 namespace arch {
 	class rcc {
@@ -92,7 +94,7 @@ namespace arch {
 				return READ_BIT(RCC->CR, RCC_CR_HSION) && READ_BIT(RCC->CR, RCC_CR_HSIRDY);
 			}
 
-			static inline uint32_t get_clk() {
+			static inline uint32_t calc_clk() {
 				return CLK_FREQ;
 			}
 		};
@@ -126,7 +128,7 @@ namespace arch {
 				return READ_BIT(RCC->CR, RCC_CR_HSEON) && READ_BIT(RCC->CR, RCC_CR_HSERDY);
 			}
 			
-			static inline uint32_t get_clk() {
+			static inline uint32_t calc_clk() {
 				return CLK_FREQ;
 			} 
 		};
@@ -147,6 +149,9 @@ namespace arch {
 				MULT_8   = RCC_CFGR_PLLMULL8,
 				MULT_9   = RCC_CFGR_PLLMULL9,
 			} mult_t;
+
+		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
 
 		public:
 			static inline sys::result_t enable() {
@@ -198,12 +203,12 @@ namespace arch {
 				return (mult_t)(READ_BIT(RCC->CFGR, RCC_CFGR_PLLMULL));
 			}
 
-			static uint32_t get_clk() {
+			static uint32_t calc_clk() {
 				uint32_t clk;
 				if (get_source() == SRC_HSI)
-					clk = HSI::get_clk() / 2;
+					clk = HSI::calc_clk() / 2;
 				else
-					clk = PREDIV1::get_clk();
+					clk = PREDIV1::calc_clk();
 
 				switch (get_mult()) {
 					case MULT_4:   return clk * 4;
@@ -233,6 +238,9 @@ namespace arch {
 			} mult_t;
 
 		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
 			static inline sys::result_t enable() {
 				SET_BIT(RCC->CR, RCC_CR_PLL2ON);
 				int i = PLL_ENABLE_WAIT;
@@ -243,8 +251,9 @@ namespace arch {
 				return sys::RES_OK;
 			}
 
-			static inline void disable() {
+			static inline sys::result_t disable() {
 				CLEAR_BIT(RCC->CR, RCC_CR_PLL2ON);
+				return READ_BIT(RCC->CR, RCC_CR_PLL2ON) == RESET ? sys::RES_OK : sys::RES_ERROR;
 			}
 
 			static inline bool is_enable() {
@@ -262,8 +271,8 @@ namespace arch {
 				return (mult_t)(READ_BIT(RCC->CFGR2, RCC_CFGR2_PLL2MUL));
 			}
 
-			static uint32_t get_clk() {
-				uint32_t clk = PREDIV2::get_clk();
+			static uint32_t calc_clk() {
+				uint32_t clk = PREDIV2::calc_clk();
 				switch (get_mult()) {
 					case MULT_8:  return clk * 8;
 					case MULT_9:  return clk * 9;
@@ -294,6 +303,9 @@ namespace arch {
 			} mult_t;
 
 		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
 			static inline sys::result_t enable() {
 				SET_BIT(RCC->CR, RCC_CR_PLL3ON);
 				int i = PLL_ENABLE_WAIT;
@@ -304,8 +316,9 @@ namespace arch {
 				return sys::RES_OK;
 			}
 
-			static inline void disable() {
+			static inline sys::result_t disable() {
 				CLEAR_BIT(RCC->CR, RCC_CR_PLL3ON);
+				return READ_BIT(RCC->CR, RCC_CR_PLL3ON) == RESET ? sys::RES_OK : sys::RES_ERROR;
 			}
 
 			static inline bool is_enable() {
@@ -365,12 +378,12 @@ namespace arch {
 				return div + 1;
 			}
 
-			static uint32_t get_clk() {
+			static uint32_t calc_clk() {
 				uint32_t clk;
 				if (get_source() == SRC_HSE)
-					clk = HSE::get_clk();
+					clk = HSE::calc_clk();
 				else
-					clk = PLL2::get_clk();
+					clk = PLL2::calc_clk();
 
 				return clk / get_div();
 			}
@@ -394,8 +407,8 @@ namespace arch {
 				return div + 1;
 			}
 
-			static uint32_t get_clk() {
-				return HSE::get_clk() / get_div();
+			static uint32_t calc_clk() {
+				return HSE::calc_clk() / get_div();
 			}
 		};
 
@@ -435,18 +448,20 @@ namespace arch {
 		public:
 			static inline sys::result_t set_source(source_t src) {
 				SET_BIT(RCC->CFGR, src);
-				return (READ_BIT(RCC->CFGR, RCC_CFGR_SW << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos)) == (src << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos))) ? sys::RES_OK : sys::RES_ERROR;
+				sys::result_t res = (READ_BIT(RCC->CFGR, RCC_CFGR_SW << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos)) == (src << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos))) ? sys::RES_OK : sys::RES_ERROR;
+				if (res == sys::RES_OK) AHB::update_clk();
+				return res;
 			}
 
 			static inline source_t get_source() {
 				return (source_t)READ_BIT(RCC->CFGR, RCC_CFGR_SW);
 			}
 
-			static uint32_t get_clk() {
+			static uint32_t calc_clk() {
 				switch (get_source()) {
-					case SRC_HSI: return HSI::get_clk();
-					case SRC_HSE: return HSE::get_clk();
-					case SRC_PLL: return PLL::get_clk();
+					case SRC_HSI: return HSI::calc_clk();
+					case SRC_HSE: return HSE::calc_clk();
+					case SRC_PLL: return PLL::calc_clk();
 					default: return 0;
 				}
 			}
@@ -480,17 +495,22 @@ namespace arch {
 			} periphery_clock_t;
 
 		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
 			static sys::result_t set_div(div_t d) {
 				SET_BIT(RCC->CFGR, d);
-				return READ_BIT(RCC->CFGR, RCC_CFGR_HPRE) == d ? sys::RES_OK : sys::RES_ERROR;
+				sys::result_t res = READ_BIT(RCC->CFGR, RCC_CFGR_HPRE) == d ? sys::RES_OK : sys::RES_ERROR;
+				if (res == sys::RES_OK) update_clk();
+				return res;
 			}
 
 			static div_t get_div() {
 				return (div_t) READ_BIT(RCC->CFGR, RCC_CFGR_HPRE);
 			}
 			
-			static uint32_t get_clk() {
-				uint32_t clk = SYSCLK::get_clk();
+			static uint32_t calc_clk() {
+				uint32_t clk = SYSCLK::calc_clk();
 				switch (get_div()) {
 					case DIV_1:   return clk / 1;
 					case DIV_2:   return clk / 2;
@@ -514,26 +534,57 @@ namespace arch {
 				CLEAR_BIT(RCC->AHBENR, clk);
 				return READ_BIT(RCC->AHBENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
 			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
+
+				HCLK::update_clk();
+				FCLK::update_clk();
+				CORTEX_TIM_CLK::update_clk();
+				APB1::update_clk();
+				APB2::update_clk();
+			}
 		};
 
 		class HCLK {
 		public:
-			inline static uint32_t get_clk() {
-				return AHB::get_clk();
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
+			inline static uint32_t calc_clk() {
+				return AHB::calc_clk();
+			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
 			}
 		};
 
 		class FCLK {
 		public:
-			inline static uint32_t get_clk() {
-				return AHB::get_clk();
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
+			inline static uint32_t calc_clk() {
+				return AHB::calc_clk();
+			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
 			}
 		};
 
 		class CORTEX_TIM_CLK {
 		public:
-			inline static uint32_t get_clk() {
-				return AHB::get_clk() / 8;
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
+			inline static uint32_t calc_clk() {
+				return AHB::calc_clk() / 8;
+			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
 			}
 		};
 
@@ -571,6 +622,9 @@ namespace arch {
 			} periphery_clock_t;
 
 		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
 			static sys::result_t set_div(div_t d) {
 				// todo: check clock (max 36 MHz)
 				SET_BIT(RCC->CFGR, d);
@@ -581,8 +635,8 @@ namespace arch {
 				return (div_t) READ_BIT(RCC->CFGR, RCC_CFGR_PPRE1);
 			}
 
-			static uint32_t get_clk() {
-				uint32_t clk = AHB::get_clk();
+			static uint32_t calc_clk() {
+				uint32_t clk = AHB::calc_clk();
 				div_t div = get_div();
 				if (div & RCC_CFGR_PPRE1_2)
 					return clk / (2 << (div & (RCC_CFGR_PPRE1_0 | RCC_CFGR_PPRE1_1) >> RCC_CFGR_PPRE1_Pos));
@@ -591,7 +645,7 @@ namespace arch {
 			}
 
 			static uint32_t get_tim_clk() {
-				uint32_t clk = get_clk();
+				uint32_t clk = calc_clk();
 				div_t div = get_div();
 				if (div & RCC_CFGR_PPRE1_2)
 					return clk * 2;
@@ -607,6 +661,10 @@ namespace arch {
 			static sys::result_t disable(periphery_clock_t clk) {
 				CLEAR_BIT(RCC->APB1ENR, clk);
 				return READ_BIT(RCC->APB1ENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
+			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
 			}
 		};
 
@@ -648,6 +706,9 @@ namespace arch {
 			} periphery_clock_t;
 
 		public:
+			volatile static inline uint32_t CLK_FREQ = 0;
+
+		public:
 			static sys::result_t set_div(div_t d) {
 				SET_BIT(RCC->CFGR, d);
 				return READ_BIT(RCC->CFGR, RCC_CFGR_PPRE2) == d ? sys::RES_OK : sys::RES_ERROR;
@@ -666,8 +727,8 @@ namespace arch {
 				return (adc_div_t) READ_BIT(RCC->CFGR, RCC_CFGR_ADCPRE);
 			}
 
-			static uint32_t get_clk() {
-				uint32_t clk = AHB::get_clk();
+			static uint32_t calc_clk() {
+				uint32_t clk = AHB::calc_clk();
 				div_t div = get_div();
 				if (div & RCC_CFGR_PPRE1_2)
 					return clk / (2 << (div & (RCC_CFGR_PPRE1_0 | RCC_CFGR_PPRE1_1) >> RCC_CFGR_PPRE1_Pos));
@@ -676,7 +737,7 @@ namespace arch {
 			}
 
 			static uint32_t get_tim_clk() {
-				uint32_t clk = get_clk();
+				uint32_t clk = calc_clk();
 				div_t div = get_div();
 				if (div & RCC_CFGR_PPRE1_2)
 					return clk * 2;
@@ -685,7 +746,7 @@ namespace arch {
 			}
 
 			static uint32_t get_adc_clk() {
-				uint32_t clk = get_clk();
+				uint32_t clk = calc_clk();
 				adc_div_t div = get_adc_div();
 				return clk / (2 * (1 + (div >> RCC_CFGR_ADCPRE_Pos)));
 			}
@@ -698,6 +759,10 @@ namespace arch {
 			static sys::result_t disable(periphery_clock_t clk) {
 				CLEAR_BIT(RCC->APB2ENR, clk);
 				return READ_BIT(RCC->APB2ENR, clk) == RESET ? sys::RES_OK : sys::RES_ERROR;
+			}
+
+			static inline void update_clk() {
+				CLK_FREQ = calc_clk();
 			}
 		};
 	};

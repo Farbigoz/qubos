@@ -94,9 +94,10 @@ public:
 
 	virtual sys::result_t enable() = 0;
 	virtual sys::result_t disable() = 0;
+	virtual sys::result_t reset_errors() = 0;
 
-	virtual sys::result_t transmit(const uint8_t *p_data, size_t size, uint32_t timeout) = 0;
-	virtual sys::result_t receive(const uint8_t *p_data, size_t size, uint32_t timeout) = 0;
+	virtual sys::result_t transmit(const uint8_t *p_data, size_t size, size_t *tx_len, sys::time_ms_t timeout) = 0;
+	virtual sys::result_t receive(const uint8_t *p_data, size_t size, size_t *rx_len, sys::time_ms_t timeout) = 0;
 	virtual sys::result_t abort() = 0;
 	virtual sys::result_t abort_transmit() = 0;
 	virtual sys::result_t abort_receive() = 0;
@@ -132,19 +133,21 @@ protected:
 };
 
 inline sys::uart::state_t operator | (sys::uart::state_t a, sys::uart::state_t b) {
-	return (sys::uart::state_t) ((uint32_t)a | (uint32_t)b);
+	return static_cast<sys::uart::state_t>((uint32_t)a | (uint32_t)b);
 }
 
-inline sys::uart::state_t operator |= (sys::uart::state_t a, sys::uart::state_t b) {
-	return (sys::uart::state_t) ((uint32_t)a | (uint32_t)b);
+inline sys::uart::state_t& operator |= (sys::uart::state_t &a, sys::uart::state_t b) {
+	a = static_cast<sys::uart::state_t>((uint32_t)a | (uint32_t)b);
+	return a;
 }
 
 inline sys::uart::error_t operator | (sys::uart::error_t a, sys::uart::error_t b) {
-	return (sys::uart::error_t) ((uint32_t)a | (uint32_t)b);
+	return static_cast<sys::uart::error_t>((uint32_t)a | (uint32_t)b);
 }
 
-inline sys::uart::error_t operator |= (sys::uart::error_t a, sys::uart::error_t b) {
-	return (sys::uart::error_t) ((uint32_t)a | (uint32_t)b);
+inline sys::uart::error_t& operator |= (sys::uart::error_t &a, sys::uart::error_t b) {
+	a = static_cast<sys::uart::error_t>((uint32_t)a | (uint32_t)b);
+	return a;
 }
 
 }

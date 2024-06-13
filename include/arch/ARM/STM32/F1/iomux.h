@@ -79,7 +79,7 @@ public:
 // sys::clock interface
 public:
 	uint32_t get_clock_freq() override {
-		return arch::rcc::APB2::get_clk();
+		return arch::rcc::APB2::calc_clk();
 	}
 
 	sys::result_t enable_clock() override {

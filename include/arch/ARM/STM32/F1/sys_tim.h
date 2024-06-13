@@ -3,6 +3,6 @@
 
 #include "stm32f1xx.h"
 #include "arch/ARM/STM32/F1/rcc.h"
-#include "arch/ARM/sys_tim.h"
+#include "arch/ARM/core_tim.h"
 
 #endif /* STM32F1_SYS_TICK_H */

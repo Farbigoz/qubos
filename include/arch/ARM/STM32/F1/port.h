@@ -81,7 +81,7 @@ public:
 
 public:
 	uint32_t get_clock_freq() override {
-		return rcc::APB2::get_clk();
+		return rcc::APB2::calc_clk();
 	}
 
 	inline sys::result_t enable_clock() override {

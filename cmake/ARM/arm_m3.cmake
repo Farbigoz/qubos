@@ -25,6 +25,8 @@ set(ARCH_COMPILE_OPTIONS
         "-fno-exceptions"       # Disable C++ exceptions
         "-fmessage-length=0"
         "-ggdb3"
+        "-fno-rtti"
+        "-fno-unwind-tables"
 
         "$<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>"   # Enable assembler files preprocessing
 )

@@ -7,7 +7,7 @@
 
 namespace sys {
 
-class periphery : virtual public clock {
+class periphery : public clock {
 	virtual sys::result_t deinit() = 0;
 };
 

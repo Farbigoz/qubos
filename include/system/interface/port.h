@@ -168,7 +168,7 @@ protected:
 };
 
 inline sys::port::pin_mask_t operator | (sys::port::pin_t pin_a, sys::port::pin_t pin_b) {
-	return (sys::port::pin_mask_t) pin_a | (sys::port::pin_mask_t) pin_b;
+	return static_cast<sys::port::pin_mask_t>((uint32_t)pin_a | (uint32_t)pin_b);
 }
 
 }

@@ -54,8 +54,8 @@ public:
 public:
 	virtual result_t init(mode_t) = 0;
 
-	virtual result_t set_tx_dma(idma*) = 0;
-	virtual result_t set_rx_dma(idma*) = 0;
+	virtual result_t set_tx_dma(dma*) = 0;
+	virtual result_t set_rx_dma(dma*) = 0;
 
 	virtual result_t set_speed(speed_t) = 0;
 	virtual result_t set_addr_len(address_len_t) = 0;

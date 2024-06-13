@@ -10,13 +10,13 @@
 
 
 namespace arch {
-class sys_tim : public sys::sys_tim {
+class core_tim : public sys::sys_tim {
 public:
-	sys_tim() {
+	core_tim() {
 		arch::irq::get_irq_signal(SysTick_IRQn).connect(
 				irq_slot,
 				[](void *ctx) {
-					auto inst = reinterpret_cast<arch::sys_tim*>(ctx);
+					auto inst = reinterpret_cast<arch::core_tim*>(ctx);
 					inst->signal_irq.emit(*inst);
 				},
 				this
@@ -26,7 +26,8 @@ public:
 // clock
 public:
 	uint32_t get_clock_freq() override {
-		return rcc::CORTEX_TIM_CLK::get_clk();
+		//return rcc::CORTEX_TIM_CLK::calc_clk();
+		return rcc::CORTEX_TIM_CLK::CLK_FREQ;
 	}
 
 	sys::result_t enable_clock() override {
@@ -77,12 +78,13 @@ public:
 		if ((p - 1UL) > SysTick_LOAD_RELOAD_Msk)
 			return sys::RES_ERROR;
 
+		uint32_t int_bit = READ_BIT(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk);
 		CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
 
 		SysTick->LOAD = p - 1UL;
 		SysTick->VAL = 0UL;
 
-		SET_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk);
+		SET_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk | int_bit);
 
 		return sys::RES_OK;
 	}
@@ -95,7 +97,7 @@ public:
 		return SysTick->VAL;
 	}
 
-	uint32_t get_mks() override {
+	uint32_t get_period_mks() override {
 		return (1000000 * (SysTick->LOAD + 1)) / get_clock_freq();
 	}
 

@@ -35,7 +35,10 @@ arch::pin		PIN_UART2_RX(PORT_D, sys::port::PIN_6);
 arch::pin		PIN_UART3_TX(PORT_D, sys::port::PIN_8);
 arch::pin		PIN_UART3_RX(PORT_D, sys::port::PIN_9);
 
-arch::sys_tim	SYS_TIM;
+arch::uart		UART2(arch::uart::UART_2);
+
+
+arch::core_tim	CORE_TIM;
 
 void delay() {
 	for (int i = 0; i < 100000; i++);
@@ -49,6 +52,8 @@ void sys_tick_signal_slot_fn(sys::sys_tim&) {
 }
 
 sys::sys_tim::signal_irq_t::Slot sys_tick_signal_slot;
+
+arch::dma	test_dma();
 
 
 int main() {
@@ -76,10 +81,10 @@ int main() {
 
 	res = arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_PLL);
 
-	//clk = arch::rcc::SYSCLK::get_clk();
-	//clk = arch::rcc::APB1::get_clk();
+	//clk = arch::rcc::SYSCLK::calc_clk();
+	//clk = arch::rcc::APB1::calc_clk();
 	//clk = arch::rcc::APB1::get_tim_clk();
-	//clk = arch::rcc::APB2::get_clk();
+	//clk = arch::rcc::APB2::calc_clk();
 	//clk = arch::rcc::APB2::get_tim_clk();
 	//clk = arch::rcc::APB2::get_adc_clk();
 
@@ -94,17 +99,26 @@ int main() {
 
 	PIN_UART3_TX.init_output();
 
-	SYS_TIM.init(1000);
-	SYS_TIM.signal_irq.connect(sys_tick_signal_slot, sys_tick_signal_slot_fn);
-	SYS_TIM.enable_irq();
+	CORE_TIM.init(1000);
+	CORE_TIM.signal_irq.connect(sys_tick_signal_slot, sys_tick_signal_slot_fn);
+	CORE_TIM.enable_irq();
+
+	sys::set_sys_timer(CORE_TIM);
 
 	//arch::rcc::APB1::enable(arch::rcc::APB1::CLK_UART2);
-	//USART2->BRR = arch::rcc::APB1::get_clk() / 9600;
+	//USART2->BRR = arch::rcc::APB1::calc_clk() / 9600;
 	////USART2->CR2 =
 	//USART2->CR1 = USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;
 	//USART2->DR = 0xA5;
 
 
+	uint8_t tx_buff[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+	size_t tx_cnt = 0;
+	UART2.enable_clock();
+	UART2.init_uart(sys::uart::MODE_FULL_DUPLEX, sys::uart::STOP_1_BIT, sys::uart::PARITY_NONE, sys::uart::LENGTH_8_BIT, sys::uart::OVERSAMPLE_16_BIT);
+	UART2.set_baud(9600);
+	UART2.enable();
+	UART2.transmit(tx_buff, sizeof(tx_buff), &tx_cnt, 100);
 
 	PORT_E.enable_clock();
 	//auto mask = sys::port::PIN_0 | sys::port::PIN_1 | sys::port::PIN_14 | sys::port::PIN_15;

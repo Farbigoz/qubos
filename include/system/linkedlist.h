@@ -206,7 +206,8 @@ namespace sys {
 			{}
 
 			type& operator*() override {
-				return *dynamic_cast<type*>(p_curr_node);
+				//return *dynamic_cast<type*>(p_curr_node);		// so slow
+				return *reinterpret_cast<type*>(p_curr_node);
 			}
 		};
 

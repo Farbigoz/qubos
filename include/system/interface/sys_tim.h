@@ -20,7 +20,7 @@ public:
 
 	virtual uint32_t get_period() = 0;
 	virtual uint32_t get_cnt() = 0;
-	virtual uint32_t get_mks() = 0;
+	virtual uint32_t get_period_mks() = 0;
 
 public:
 	signal_irq_t signal_irq;

@@ -7,6 +7,11 @@
 
 namespace sys {
 	sys::result_t set_sys_timer(sys::sys_tim &st);
+
+	bool has_sys_timer();
+
+	time_ms_t time_ms();
+	time_msk_t time_mks();
 }
 
 
