@@ -109,7 +109,7 @@ public:
 	virtual sys::result_t abort_receive_it() = 0;
 
 	virtual sys::result_t transmit_dma(const uint8_t *p_data, size_t size) = 0;
-	virtual sys::result_t receive_dma(const uint8_t *p_data, size_t size) = 0;
+	virtual sys::result_t receive_dma(uint8_t *p_data, size_t size) = 0;
 	virtual sys::result_t abort_dma() = 0;
 	virtual sys::result_t abort_transmit_dma() = 0;
 	virtual sys::result_t abort_receive_dma() = 0;

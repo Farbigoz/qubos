@@ -17,7 +17,7 @@ public:
 	virtual sys::result_t set_irq_prior(uint32_t prior) = 0;
 	virtual uint32_t get_irq_prior() = 0;
 
-	virtual bool is_irq() = 0;
+	virtual bool irq_enabled() = 0;
 	virtual sys::result_t enable_irq() = 0;
 	virtual sys::result_t disable_irq() = 0;
 };

@@ -43,11 +43,13 @@ namespace arch {
 			return sys::RES_OK;
 		}
 
-		static bool is_irq(IRQn_Type irqn) {
+		static bool is_enabled(IRQn_Type irqn) {
 			return NVIC_GetEnableIRQ(irqn);
 		}
 
 		inline static void handle(uint8_t irqn) {
+			// Evaluate: (IRQn_Type)(irqn-16)
+
 			if (irqn < 0) return;
 			if (irqn >= ARM_IRQ_VEC_LEN) return;
 

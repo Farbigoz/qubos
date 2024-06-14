@@ -277,7 +277,7 @@ public:
 	result_t enable_clock()				override { return RES_OK; }
 	result_t disable_clock()			override { return RES_OK; }
 
-	bool is_irq()						override { return false; }
+	bool irq_enabled()						override { return false; }
 	result_t enable_irq()				override { return RES_OK; }
 	result_t disable_irq()				override { return RES_OK; }
 	void set()							override {}

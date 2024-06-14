@@ -53,8 +53,8 @@ public:
 		return arch::irq::get_irq_prior(SysTick_IRQn);
 	}
 
-	bool is_irq() override {
-		return arch::irq::is_irq(SysTick_IRQn);
+	bool irq_enabled() override {
+		return arch::irq::is_enabled(SysTick_IRQn);
 	}
 
 	sys::result_t enable_irq() override {

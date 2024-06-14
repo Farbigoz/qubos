@@ -8,5 +8,5 @@
 
 extern "C"
 void irq_handler() {
-	arch::irq::handle((IRQn_Type)(SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk));
+	arch::irq::handle(SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk);
 }

@@ -53,7 +53,27 @@ void sys_tick_signal_slot_fn(sys::sys_tim&) {
 
 sys::sys_tim::signal_irq_t::Slot sys_tick_signal_slot;
 
-arch::dma	test_dma();
+arch::dma	uart_tx_dma(arch::dma::DMA_1, arch::dma::CHANNEL_7);
+arch::dma	uart_rx_dma(arch::dma::DMA_1, arch::dma::CHANNEL_6);
+
+
+int dma_test = 0;
+
+void dma_cplt_slot_fn(sys::dma&) {
+	dma_test++;
+}
+
+void dma_half_cplt_slot_fn(sys::dma&) {
+	dma_test++;
+}
+
+void dma_error_cplt_slot_fn(sys::dma&, sys::dma::error_t) {
+	dma_test++;
+}
+
+sys::dma::signal_cplt_t::Slot		dma_cplt_slot;
+sys::dma::signal_half_cplt_t::Slot	dma_half_cplt_slot;
+sys::dma::signal_error_t::Slot		dma_error_cplt_slot;
 
 
 int main() {
@@ -99,26 +119,43 @@ int main() {
 
 	PIN_UART3_TX.init_output();
 
-	CORE_TIM.init(1000);
+	res = CORE_TIM.init(1000);
 	CORE_TIM.signal_irq.connect(sys_tick_signal_slot, sys_tick_signal_slot_fn);
-	CORE_TIM.enable_irq();
+	res = CORE_TIM.enable_irq();
 
-	sys::set_sys_timer(CORE_TIM);
+	res = sys::set_sys_timer(CORE_TIM);
 
-	//arch::rcc::APB1::enable(arch::rcc::APB1::CLK_UART2);
-	//USART2->BRR = arch::rcc::APB1::calc_clk() / 9600;
-	////USART2->CR2 =
-	//USART2->CR1 = USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;
-	//USART2->DR = 0xA5;
 
+
+
+
+	res = uart_tx_dma.enable_clock();
+	res = uart_tx_dma.init(sys::dma::DIR_MEM_TO_PER, sys::dma::DATA_ALIGN_BYTE, sys::dma::DATA_ALIGN_BYTE, false, true, false, sys::dma::PRIOR_MEDIUM);
+	//res = uart_tx_dma.set_irq_prior(5);
+	//res = uart_tx_dma.enable_irq();
+
+	res = uart_rx_dma.enable_clock();
+	res = uart_rx_dma.init(sys::dma::DIR_PER_TO_MEM, sys::dma::DATA_ALIGN_BYTE, sys::dma::DATA_ALIGN_BYTE, false, true, false, sys::dma::PRIOR_MEDIUM);
+
+	//uart_tx_dma.signal_cplt.connect(dma_cplt_slot, dma_cplt_slot_fn);
+	//uart_tx_dma.signal_half_cplt.connect(dma_half_cplt_slot, dma_half_cplt_slot_fn);
+	//uart_tx_dma.signal_error.connect(dma_error_cplt_slot, dma_error_cplt_slot_fn);
 
 	uint8_t tx_buff[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-	size_t tx_cnt = 0;
-	UART2.enable_clock();
-	UART2.init_uart(sys::uart::MODE_FULL_DUPLEX, sys::uart::STOP_1_BIT, sys::uart::PARITY_NONE, sys::uart::LENGTH_8_BIT, sys::uart::OVERSAMPLE_16_BIT);
-	UART2.set_baud(9600);
-	UART2.enable();
-	UART2.transmit(tx_buff, sizeof(tx_buff), &tx_cnt, 100);
+	uint8_t rx_buff[sizeof(tx_buff)] = {0x00};
+
+	res = UART2.enable_clock();
+	res = UART2.init_uart(sys::uart::MODE_FULL_DUPLEX, sys::uart::STOP_1_BIT, sys::uart::PARITY_NONE, sys::uart::LENGTH_8_BIT, sys::uart::OVERSAMPLE_16_BIT);
+	res = UART2.set_baud(9600);
+	res = UART2.enable();
+
+	res = UART2.set_rx_dma(&uart_rx_dma);
+	res = UART2.set_tx_dma(&uart_tx_dma);
+	res = UART2.receive_dma(rx_buff, sizeof(rx_buff));
+	res = UART2.transmit_dma(tx_buff, 5);//sizeof(tx_buff));
+
+	// size_t tx_cnt = 0;
+	// UART2.transmit(tx_buff, sizeof(tx_buff), &tx_cnt, 100);
 
 	PORT_E.enable_clock();
 	//auto mask = sys::port::PIN_0 | sys::port::PIN_1 | sys::port::PIN_14 | sys::port::PIN_15;

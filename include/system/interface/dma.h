@@ -80,11 +80,12 @@ public:
 
 	virtual sys::result_t enable() = 0;
 	virtual sys::result_t disable() = 0;
+	virtual bool is_enabled() = 0;
 
-	virtual sys::result_t start(void *p_src, void *p_dst, size_t size) = 0;
+	virtual sys::result_t start(const volatile void *p_src, void volatile *p_dst, size_t size) = 0;
 	virtual sys::result_t abort() = 0;
 
-	virtual sys::result_t start_it(void *p_src, void *p_dst, size_t size) = 0;
+	virtual sys::result_t start_it(const volatile void *p_src, void volatile *p_dst, size_t size) = 0;
 	virtual sys::result_t abort_it() = 0;
 
 public:

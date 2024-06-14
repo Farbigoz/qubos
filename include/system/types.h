@@ -8,7 +8,7 @@
 
 namespace sys {
 
-	typedef enum {
+	typedef enum RESULT_T {
 		RES_UNEXPECTED	= -1000,
 		RES_NO_SYS_TIM,
 		RES_TIMEOUT,

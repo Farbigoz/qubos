@@ -57,8 +57,8 @@ namespace arch {
 			return arch::irq::get_irq_prior(irqn);
 		}
 
-		bool is_irq() override {
-			return arch::irq::is_irq(irqn);
+		bool irq_enabled() override {
+			return arch::irq::is_enabled(irqn);
 		}
 
 		sys::result_t enable_irq() override {

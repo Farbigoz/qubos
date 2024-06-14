@@ -46,7 +46,9 @@ public:
 	uart(uart_t u)
 	:
 	uart_num(u),
-	uart_def(UART_MAP[u])
+	uart_def(UART_MAP[u]),
+	dma_tx(nullptr),
+	dma_rx(nullptr)
 	{}
 
 public:
@@ -90,45 +92,62 @@ public:
 
 // periphery
 public:
-	sys::result_t set_tx_irq_prior(uint32_t) {
-
-	}
-	sys::result_t set_rx_irq_prior(uint32_t) {
-
+	sys::result_t set_tx_irq_prior(uint32_t) override {
+		// todo
+		return sys::RES_ERROR;
 	}
 
-	uint32_t get_tx_irq_prior() {
-
-	}
-	uint32_t get_rx_irq_prior() {
-
+	sys::result_t set_rx_irq_prior(uint32_t) override {
+		// todo
+		return sys::RES_ERROR;
 	}
 
-	bool tx_busy() {
-
-	}
-	bool rx_busy() {
-
+	uint32_t get_tx_irq_prior() override {
+		// todo
+		return 0;
 	}
 
-	bool is_tx_irq() {
-
-	}
-	bool is_rx_irq() {
-
+	uint32_t get_rx_irq_prior() override {
+		// todo
+		return 0;
 	}
 
-	sys::result_t enable_tx_irq() {
-
+	bool tx_busy() override {
+		return (get_state() & STATE_TX_BUSY) == STATE_TX_BUSY;
 	}
-	sys::result_t enable_rx_irq() {
 
+	bool rx_busy() override {
+		return (get_state() & STATE_RX_BUSY) == STATE_RX_BUSY;
 	}
-	sys::result_t disable_tx_irq() {
 
+	bool is_tx_irq() override {
+		// todo
+		return false;
 	}
-	sys::result_t disable_rx_irq() {
 
+	bool is_rx_irq() override {
+		// todo
+		return false;
+	}
+
+	sys::result_t enable_tx_irq() override {
+		// todo
+		return sys::RES_ERROR;
+	}
+
+	sys::result_t enable_rx_irq() override {
+		// todo
+		return sys::RES_ERROR;
+	}
+
+	sys::result_t disable_tx_irq() override {
+		// todo
+		return sys::RES_ERROR;
+	}
+
+	sys::result_t disable_rx_irq() override {
+		// todo
+		return sys::RES_ERROR;
 	}
 
 // uart
@@ -256,6 +275,21 @@ public:
 		uart_def->BRR = get_clock_freq() / new_baud;
 		return sys::RES_OK;
 	}
+
+	sys::result_t set_tx_dma(dma *new_dma) {
+		// todo
+		dma_tx = new_dma;
+		// connect to cplt, half_cplt
+		return sys::RES_OK;
+	}
+
+	sys::result_t set_rx_dma(dma *new_dma) {
+		// todo
+		dma_rx = new_dma;
+		// connect to cplt, half_cplt
+		return sys::RES_OK;
+	}
+
 
 	stop_t get_stop_bit() override {
 		switch (READ_REG(uart_def->CR2) & USART_CR2_STOP_Msk) {
@@ -398,61 +432,122 @@ public:
 		if (!sys::has_sys_timer())
 			return sys::RES_NO_SYS_TIM;
 
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_transmit() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_receive() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 
 	sys::result_t transmit_it(const uint8_t *p_data, size_t size) override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t receive_it(const uint8_t *p_data, size_t size) override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_it() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_transmit_it() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_receive_it() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 
 	sys::result_t transmit_dma(const uint8_t *p_data, size_t size) override {
+		if (dma_tx == nullptr)
+			return sys::RES_ERROR;
 
+		// todo: check dma result
+
+		dma_tx->disable();
+
+		dma_tx->set_per_inc(false);
+		dma_tx->set_mem_inc(true);
+		dma_tx->set_direction(sys::dma::DIR_MEM_TO_PER);
+		if (get_length() == LENGTH_8_BIT)
+		{
+			dma_tx->set_per_data_align(sys::dma::DATA_ALIGN_BYTE);
+			dma_tx->set_mem_data_align(sys::dma::DATA_ALIGN_BYTE);
+		}
+		else
+		{
+			dma_tx->set_per_data_align(sys::dma::DATA_ALIGN_HALFWORD);
+			dma_tx->set_mem_data_align(sys::dma::DATA_ALIGN_HALFWORD);
+		}
+
+		dma_tx->start_it(p_data, &uart_def->DR, size);
+
+		SET_BIT(uart_def->CR3, USART_CR3_DMAT);
+		return sys::RES_OK;
 	}
 
-	sys::result_t receive_dma(const uint8_t *p_data, size_t size) override {
+	sys::result_t receive_dma(uint8_t *p_data, size_t size) override {
+		if (dma_rx == nullptr)
+			return sys::RES_ERROR;
 
+		dma_rx->disable();
+
+		dma_rx->set_per_inc(false);
+		dma_rx->set_mem_inc(true);
+		dma_rx->set_direction(sys::dma::DIR_PER_TO_MEM);
+		if (get_length() == LENGTH_8_BIT)
+		{
+			dma_rx->set_per_data_align(sys::dma::DATA_ALIGN_BYTE);
+			dma_rx->set_mem_data_align(sys::dma::DATA_ALIGN_BYTE);
+		}
+		else
+		{
+			dma_rx->set_per_data_align(sys::dma::DATA_ALIGN_HALFWORD);
+			dma_rx->set_mem_data_align(sys::dma::DATA_ALIGN_HALFWORD);
+		}
+
+		dma_rx->start_it(&uart_def->DR, p_data, size);
+
+		SET_BIT(uart_def->CR3, USART_CR3_DMAR);
+		return sys::RES_OK;
 	}
 
 	sys::result_t abort_dma() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_transmit_dma() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
 
 	sys::result_t abort_receive_dma() override {
-
+		// todo
+		return sys::RES_ERROR;
 	}
+
+	// todo: dma stop, dma resume
 
 
 private:
@@ -485,6 +580,9 @@ private:
 	uint32_t baud;
 	uart_t uart_num;
 	USART_TypeDef *uart_def;
+
+	arch::dma *dma_tx;
+	arch::dma *dma_rx;
 };
 }
 
