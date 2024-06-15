@@ -62,6 +62,7 @@ namespace arch {
 		class CORTEX_TIM_CLK;
 		class APB1;
 		class APB2;
+		class MCO;
 
 	public:
 		typedef enum {

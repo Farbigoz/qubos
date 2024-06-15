@@ -19,14 +19,6 @@ set(ARCH_COMPILE_OPTIONS
         "-mcpu=cortex-m3"       # Cortex version
         "-mthumb"               # Use short commands
         "-mthumb-interwork"     # Use short commands
-        "-ffunction-sections"   # Remove unused code
-        "-fdata-sections"       # Remove unused code
-        "-fno-common"           # C++ compatibility
-        "-fno-exceptions"       # Disable C++ exceptions
-        "-fmessage-length=0"
-        "-ggdb3"
-        "-fno-rtti"
-        "-fno-unwind-tables"
 
         "$<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>"   # Enable assembler files preprocessing
 )
