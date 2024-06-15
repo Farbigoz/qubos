@@ -3,28 +3,23 @@
 
 #include "stm32f4xx.h"
 #include "system/interface/port.h"
-#include "arch/ARM/STM32/F4/clock.h"
+#include "arch/ARM/STM32/F4/rcc.h"
 
 
 #ifndef GPIOC
 #define GPIOC nullptr
-#define RCC_AHB1ENR_GPIOCEN (0x00U)
 #endif
 #ifndef GPIOD
 #define GPIOD nullptr
-#define RCC_AHB1ENR_GPIODEN (0x00U)
 #endif
 #ifndef GPIOE
 #define GPIOE nullptr
-#define RCC_AHB1ENR_GPIOEEN (0x00U)
 #endif
 #ifndef GPIOF
 #define GPIOF nullptr
-#define RCC_AHB1ENR_GPIOFEN (0x00U)
 #endif
 #ifndef GPIOG
 #define GPIOG nullptr
-#define RCC_AHB1ENR_GPIOGEN (0x00U)
 #endif
 #ifndef GPIOH
 #define GPIOH nullptr
@@ -32,27 +27,36 @@
 #endif
 #ifndef GPIOI
 #define GPIOI nullptr
-#define RCC_AHB1ENR_GPIOIEN (0x00U)
 #endif
 #ifndef GPIOJ
 #define GPIOJ nullptr
-#define RCC_AHB1ENR_GPIOJEN (0x00U)
 #endif
 #ifndef GPIOK
 #define GPIOK nullptr
-#define RCC_AHB1ENR_GPIOKEN (0x00U)
 #endif
 
 
 namespace arch {
 
-class port : public sys::port, public arch::clock {
+class port : public sys::port {
 // Constants
 public:
 	static inline GPIO_TypeDef *GPIO_PORT_MAP[] = {GPIOA, GPIOB, GPIOC,
 												   GPIOD, GPIOE, GPIOF,
 												   GPIOG, GPIOH, GPIOI,
 												   GPIOJ, GPIOK, nullptr};
+
+	static inline rcc::AHB::periphery_clock1_t GPIO_CLK[] = {rcc::AHB::CLK_GPIOA,
+															 rcc::AHB::CLK_GPIOB,
+															 rcc::AHB::CLK_GPIOC,
+															 rcc::AHB::CLK_GPIOD,
+															 rcc::AHB::CLK_GPIOE,
+															 rcc::AHB::CLK_GPIOF,
+															 rcc::AHB::CLK_GPIOG,
+															 rcc::AHB::CLK_GPIOH,
+															 rcc::AHB::CLK_GPIOI,
+															 rcc::AHB::CLK_GPIOJ,
+															 rcc::AHB::CLK_GPIOK};
 
 	static inline const uint32_t GPIO_PINS_NUM = 16;
 	static inline const uint32_t GPIO_PINS_MASK = 0xffffU;
@@ -106,10 +110,25 @@ public:
 public:
 	port(port::port_t port)
 	:
-	arch::clock(RCC->AHB1ENR, get_clock_en_bit(port)),
+	//arch::clock(RCC->AHB1ENR, get_clock_en_bit(port)),
 	port_num(port),
 	gpio_port(GPIO_PORT_MAP[port])
 	{}
+
+// clock
+public:
+	uint32_t get_clock_freq() override {
+		return rcc::AHB::calc_clk();
+	}
+
+	sys::result_t enable_clock() override {
+		return rcc::AHB::enable(GPIO_CLK[port_num]);
+	}
+
+	sys::result_t disable_clock() override {
+		return rcc::AHB::disable(GPIO_CLK[port_num]);
+	}
+
 
 // Interface periphery
 public:
