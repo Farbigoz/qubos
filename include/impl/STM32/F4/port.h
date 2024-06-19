@@ -3,7 +3,7 @@
 
 #include "stm32f4xx.h"
 #include "system/interface/port.h"
-#include "arch/ARM/STM32/F4/rcc.h"
+#include "impl/STM32/F4/rcc.h"
 
 
 #ifndef GPIOC
@@ -36,7 +36,7 @@
 #endif
 
 
-namespace arch {
+namespace impl {
 
 class port : public sys::port {
 // Constants

@@ -1,5 +1,5 @@
-#ifndef STM32F401_RCC_H
-#define STM32F401_RCC_H
+#ifndef STM32F4_RCC_H
+#define STM32F4_RCC_H
 
 #include "stm32f4xx.h"
 #include "system/types.h"
@@ -349,7 +349,7 @@
 #endif /* RCC_APB2ENR_LTDCEN */
 
 
-namespace arch {
+namespace impl {
 	class rcc {
 	public:
 		class HSI;				// Internal oscillator
@@ -957,31 +957,4 @@ namespace arch {
 }
 
 
-void test_rcc() {
-	sys::result_t RESULT;
-	//for (int i = 0; i < 0xffffff; i++);
-
-	(*(__IO uint8_t *)(0x40023C00U) = (uint8_t)(FLASH_ACR_LATENCY_4WS));
-
-	RESULT = arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_HSI);
-
-	RESULT = arch::rcc::HSE::set_freq(25000000);
-	RESULT = arch::rcc::HSE::enable();
-	//RESULT = arch::rcc::SW::set_source(arch::rcc::SW::SRC_HSE);
-
-	RESULT = arch::rcc::PLL::disable();
-	RESULT = arch::rcc::PLL::set_source(arch::rcc::PLL::SRC_HSE);
-	RESULT = arch::rcc::PLL::set_prediv_m(25);
-	RESULT = arch::rcc::PLL::set_mult_n(336);
-	//RESULT = arch::rcc::PLL::set_mult_n(240);
-	//RESULT = arch::rcc::PLL::set_mult_n(300);
-	RESULT = arch::rcc::PLL::set_div_p(arch::rcc::PLL::DIV_P_4);
-	RESULT = arch::rcc::PLL::enable();
-
-	//SET_BIT(RCC->CFGR, 0x04U << RCC_CFGR_PPRE1_Pos);
-
-	RESULT = arch::rcc::SYSCLK::set_source(arch::rcc::SYSCLK::SRC_PLL);
-}
-
-
-#endif /* STM32F401_RCC_H */
+#endif /* STM32F4_RCC_H */

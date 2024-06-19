@@ -6,7 +6,7 @@
 #include "arch/ARM/irq.h"
 
 // need previous include "core_cmX.h" and "rcc.h"
-// example: "arch/ARM/STM32/F1/sys_tim.h"
+// example: "impl/STM32/F1/sys_tim.h"
 
 
 namespace arch {
@@ -27,7 +27,7 @@ public:
 public:
 	uint32_t get_clock_freq() override {
 		//return rcc::CORTEX_TIM_CLK::calc_clk();
-		return rcc::CORTEX_TIM_CLK::CLK_FREQ;
+		return impl::rcc::CORTEX_TIM_CLK::CLK_FREQ;
 	}
 
 	sys::result_t enable_clock() override {
@@ -98,7 +98,8 @@ public:
 	}
 
 	uint32_t get_period_mks() override {
-		return (1000000 * (SysTick->LOAD + 1)) / get_clock_freq();
+		//return (1000000 * (SysTick->LOAD + 1)) / get_clock_freq();
+		return (uint32_t)(((float)(SysTick->LOAD + 1) / (float)get_clock_freq()) * 1000000.0f);
 	}
 
 private:

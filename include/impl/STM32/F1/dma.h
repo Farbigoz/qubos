@@ -9,7 +9,7 @@
 #include "system/interface/dma.h"
 
 
-namespace arch {
+namespace impl {
 
 class dma : public sys::dma {
 public:
@@ -59,9 +59,9 @@ public:
 	ch_def(DMA_CHANNEL_MAP[dma_num][chan_num]),
 	transaction_size(0)
 	{
-		irq::get_irq_signal(DMA_CH_IRQ_MAP[dma_num][chan_num]).connect(
+		arch::irq::get_irq_signal(DMA_CH_IRQ_MAP[dma_num][chan_num]).connect(
 				irq_slot,
-				[](void *ctx) { reinterpret_cast<arch::dma *>(ctx)->irq_handler(); },
+				[](void *ctx) { reinterpret_cast<impl::dma *>(ctx)->irq_handler(); },
 				this
 		);
 	}
@@ -94,23 +94,23 @@ public:
 	}
 
 	sys::result_t enable_irq() override {
-		return irq::enable_irq(DMA_CH_IRQ_MAP[dma_num][chan_num]);
+		return arch::irq::enable_irq(DMA_CH_IRQ_MAP[dma_num][chan_num]);
 	}
 
 	sys::result_t disable_irq() override {
-		return irq::disable_irq(DMA_CH_IRQ_MAP[dma_num][chan_num]);
+		return arch::irq::disable_irq(DMA_CH_IRQ_MAP[dma_num][chan_num]);
 	}
 
 	bool irq_enabled() override {
-		return irq::is_enabled(DMA_CH_IRQ_MAP[dma_num][chan_num]);
+		return arch::irq::is_enabled(DMA_CH_IRQ_MAP[dma_num][chan_num]);
 	}
 
 	sys::result_t set_irq_prior(uint32_t prior) override {
-		return irq::set_irq_prior(DMA_CH_IRQ_MAP[dma_num][chan_num], prior);
+		return arch::irq::set_irq_prior(DMA_CH_IRQ_MAP[dma_num][chan_num], prior);
 	}
 
 	uint32_t get_irq_prior() override {
-		return irq::get_irq_prior(DMA_CH_IRQ_MAP[dma_num][chan_num]);
+		return arch::irq::get_irq_prior(DMA_CH_IRQ_MAP[dma_num][chan_num]);
 	}
 
 // dma
@@ -430,7 +430,7 @@ private:
 	DMA_TypeDef *dma_def;
 	DMA_Channel_TypeDef *ch_def;
 
-	irq::irq_signal_t::SlotWithCtx	irq_slot;
+	arch::irq::irq_signal_t::SlotWithCtx irq_slot;
 
 	uint32_t transaction_size;
 };

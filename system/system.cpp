@@ -4,13 +4,12 @@ static sys::sys_tim *p_system_timer = nullptr;
 static sys::sys_tim::signal_irq_t::Slot system_timer_slot;
 
 static volatile uint64_t time_mks_cnt = 0;
-uint32_t tmp = 0;
+static volatile uint64_t time_ms_cnt = 0;
 
 static void sys_tim_slot_fn(sys::sys_tim& st) {
-	tmp = st.get_cnt();
-	time_mks_cnt += st.get_period_mks();
-	tmp = st.get_cnt();
-	tmp++;
+	uint32_t mks_period = st.get_period_mks();
+	time_mks_cnt += mks_period;
+	time_ms_cnt += mks_period / 1000;
 }
 
 
@@ -34,5 +33,5 @@ uint64_t sys::time_mks() {
 }
 
 uint64_t sys::time_ms() {
-	return time_mks_cnt / 1000;
+	return time_ms_cnt;
 }

@@ -4,27 +4,22 @@
 #include "system/interface/pin.h"
 #include "arch/ARM/irq.h"
 
-#if defined(STM32F1)
-#include "arch/ARM/STM32/F1/port.h"
-#elif defined(STM32F4)
-#include "arch/ARM/STM32/F4/port.h"
-#endif
 
-namespace arch {
+namespace impl {
 
 	class pin : public sys::pin {
 
 	public:
-		pin(arch::port &port, arch::port::pin_t pin)
-				:
-				sys::pin(),
-				port(port),
-				pin_mask(pin),
-				irqn(get_irq_type(pin))
+		pin(sys::port &iport, port::pin_t pin)
+		:
+		sys::pin(),
+		iport(iport),
+		pin_mask(pin),
+		irqn(get_irq_type(pin))
 		{
 			arch::irq::get_irq_signal(irqn).connect(
 					irq_slot,
-					[](void *ctx) { reinterpret_cast<arch::pin*>(ctx)->irq_handler(); },
+					[](void *ctx) { reinterpret_cast<impl::pin*>(ctx)->irq_handler(); },
 					this
 			);
 		}
@@ -32,19 +27,19 @@ namespace arch {
 // Interface sys::periphery
 	public:
 		sys::result_t deinit() override {
-			return port.deinit(pin_mask);
+			return iport.deinit(pin_mask);
 		}
 
 		uint32_t get_clock_freq() override {
-			return port.get_clock_freq();
+			return iport.get_clock_freq();
 		}
 
 		sys::result_t enable_clock() override {
-			return port.enable_clock();
+			return iport.enable_clock();
 		}
 
 		sys::result_t disable_clock() override {
-			return port.disable_clock();
+			return iport.disable_clock();
 		}
 
 // Interface sys::periphery_with_irq
@@ -73,19 +68,19 @@ namespace arch {
 	public:
 		inline sys::result_t init_output(driver_t drv, pull_t pull, speed_t speed) override {
 			clear();
-			return port.init_output(pin_mask, drv, pull, speed);
+			return iport.init_output(pin_mask, drv, pull, speed);
 		}
 
 		inline sys::result_t init_input(pull_t pull, trigger_t trig) override {
-			return port.init_input(pin_mask, pull, trig);
+			return iport.init_input(pin_mask, pull, trig);
 		}
 
 		inline sys::result_t init_analog() override {
-			return port.init_analog(pin_mask);
+			return iport.init_analog(pin_mask);
 		}
 
 		inline sys::result_t init_alt(alt_t af, driver_t drv, pull_t pull, speed_t speed) override {
-			return port.init_alt(pin_mask, af, drv, pull, speed);
+			return iport.init_alt(pin_mask, af, drv, pull, speed);
 		}
 
 		using sys::pin::init_output;
@@ -94,23 +89,23 @@ namespace arch {
 		using sys::pin::init_alt;
 
 		inline sys::result_t set_driver(driver_t drv) override {
-			return port.set_driver(pin_mask, drv);
+			return iport.set_driver(pin_mask, drv);
 		}
 
 		inline sys::result_t set_pull(pull_t pull) override {
-			return port.set_pull(pin_mask, pull);
+			return iport.set_pull(pin_mask, pull);
 		}
 
 		inline sys::result_t set_speed(speed_t speed) override {
-			return port.set_speed(pin_mask, speed);
+			return iport.set_speed(pin_mask, speed);
 		}
 
 		inline sys::result_t set_alt(alt_t af) override {
-			return port.set_alt(pin_mask, af);
+			return iport.set_alt(pin_mask, af);
 		}
 
 		inline sys::result_t set_irq_trig(trigger_t trigger) override {
-			return port.set_irq_trig(pin_mask, trigger);
+			return iport.set_irq_trig(pin_mask, trigger);
 		}
 
 
@@ -121,27 +116,27 @@ namespace arch {
 		// virtual trigger_t get_irq_trigger() = 0;
 
 		inline void set() override {
-			port.set(pin_mask);
+			iport.set(pin_mask);
 		}
 
 		inline void set(bool state) override {
-			port.set(pin_mask, state);
+			iport.set(pin_mask, state);
 		}
 
 		inline void clear() override {
-			port.clear(pin_mask);
+			iport.clear(pin_mask);
 		}
 
 		inline void tgl() override {
-			port.tgl(pin_mask);
+			iport.tgl(pin_mask);
 		}
 
 		inline bool state() override {
-			return (port.state() & pin_mask) != 0;
+			return (iport.state() & pin_mask) != 0;
 		}
 
 		inline bool read() override {
-			return (port.read() & pin_mask) != 0;
+			return (iport.read() & pin_mask) != 0;
 		}
 
 	private:
@@ -152,30 +147,30 @@ namespace arch {
 		}
 
 	private:
-		static IRQn_Type get_irq_type(arch::port::pin_t pin) {
+		static IRQn_Type get_irq_type(port::pin_t pin) {
 			switch (pin) {
-				case arch::port::PIN_0:
+				case port::PIN_0:
 					return EXTI0_IRQn;
-				case arch::port::PIN_1:
+				case port::PIN_1:
 					return EXTI1_IRQn;
-				case arch::port::PIN_2:
+				case port::PIN_2:
 					return EXTI2_IRQn;
-				case arch::port::PIN_3:
+				case port::PIN_3:
 					return EXTI3_IRQn;
-				case arch::port::PIN_4:
+				case port::PIN_4:
 					return EXTI4_IRQn;
-				case arch::port::PIN_5:
-				case arch::port::PIN_6:
-				case arch::port::PIN_7:
-				case arch::port::PIN_8:
-				case arch::port::PIN_9:
+				case port::PIN_5:
+				case port::PIN_6:
+				case port::PIN_7:
+				case port::PIN_8:
+				case port::PIN_9:
 					return EXTI9_5_IRQn;
-				case arch::port::PIN_10:
-				case arch::port::PIN_11:
-				case arch::port::PIN_12:
-				case arch::port::PIN_13:
-				case arch::port::PIN_14:
-				case arch::port::PIN_15:
+				case port::PIN_10:
+				case port::PIN_11:
+				case port::PIN_12:
+				case port::PIN_13:
+				case port::PIN_14:
+				case port::PIN_15:
 					return EXTI15_10_IRQn;
 
 				default:
@@ -185,8 +180,8 @@ namespace arch {
 
 	private:
 		IRQn_Type irqn;
-		arch::port &port;
-		arch::port::pin_mask_t pin_mask;
+		sys::port &iport;
+		sys::port::pin_mask_t pin_mask;
 		arch::irq::irq_signal_t::SlotWithCtx irq_slot;
 	};
 }

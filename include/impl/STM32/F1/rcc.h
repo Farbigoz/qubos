@@ -45,7 +45,7 @@
 // todo: заменить метод calc_clk() на переменную CLK_FREQ которая пересчитывается после любых изменений
 
 
-namespace arch {
+namespace impl {
 	class rcc {
 	public:
 		class HSI;

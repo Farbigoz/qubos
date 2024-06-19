@@ -246,50 +246,6 @@ protected:
 	//ipin& operator=(ipin&&) = delete;
 };
 
-
-
-
-class nullpin : public pin {
-public:
-	nullpin() : pin()
-	{}
-
-	//result_t init_output()				override { return RES_OK; }
-	//result_t init_input()				override { return RES_OK; }
-	//result_t init_analog()				override { return RES_OK; }
-	//result_t init_alt(alt_t)			override { return RES_OK; }
-	result_t deinit()					override { return RES_OK; }
-	result_t set_driver(driver_t d)		override { return RES_OK; }
-	result_t set_pull(pull_t p)			override { return RES_OK; }
-	result_t set_speed(speed_t s)		override { return RES_OK; }
-	result_t set_alt(alt_t a)			override { return RES_OK; }
-	result_t set_irq_trig(trigger_t)	override { return RES_OK; }
-	result_t set_irq_prior(uint32_t)	override { return RES_OK; }
-
-	//driver_t get_driver()				override { return DRV_PUSH_PULL; }
-	//pull_t get_pull()					override { return PULL_NONE; }
-	//speed_t get_speed()					override { return SPEED_SLOW; }
-	//alt_t get_alt()						override { return ALT_NONE; }
-	//trigger_t get_irq_trigger()			override { return TRIG_NONE; }
-	uint32_t get_irq_prior()			override { return 0; }
-	uint32_t get_clock_freq()			override { return 0; }
-
-	result_t enable_clock()				override { return RES_OK; }
-	result_t disable_clock()			override { return RES_OK; }
-
-	bool irq_enabled()						override { return false; }
-	result_t enable_irq()				override { return RES_OK; }
-	result_t disable_irq()				override { return RES_OK; }
-	void set()							override {}
-	void set(bool v)					override {}
-	void clear()						override {}
-	void tgl()							override {}
-	bool state()						override { return true; }
-	bool read()							override { return true; }
-
-	void trig_irq()						{ signal_irq.emit(*this); }
-};
-
 }
 
 

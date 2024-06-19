@@ -2,14 +2,14 @@
 #define STM32F1_UART_H
 
 #include "stm32f1xx.h"
-#include "arch/ARM/STM32/F1/rcc.h"
-#include "arch/ARM/STM32/F1/dma.h"
+#include "impl/STM32/F1/rcc.h"
+#include "impl/STM32/F1/dma.h"
 #include "system/types.h"
 #include "system/system.h"
 #include "system/interface/uart.h"
 
 
-namespace arch {
+namespace impl {
 class uart : public sys::uart {
 public:
 	inline static USART_TypeDef* UART_MAP[] = {USART1, USART2, USART3, UART4, UART5};
@@ -76,6 +76,8 @@ public:
 				return rcc::APB1::enable((rcc::APB1::periphery_clock_t) CLOCK_MAP[uart_num]);
 			case rcc::BUS_APB2:
 				return rcc::APB2::enable((rcc::APB2::periphery_clock_t) CLOCK_MAP[uart_num]);
+			default:
+				return sys::RES_ERROR;
 		}
 	}
 
@@ -87,6 +89,8 @@ public:
 				return rcc::APB1::disable((rcc::APB1::periphery_clock_t) CLOCK_MAP[uart_num]);
 			case rcc::BUS_APB2:
 				return rcc::APB2::disable((rcc::APB2::periphery_clock_t) CLOCK_MAP[uart_num]);
+			default:
+				return sys::RES_ERROR;
 		}
 	}
 
@@ -581,8 +585,8 @@ private:
 	uart_t uart_num;
 	USART_TypeDef *uart_def;
 
-	arch::dma *dma_tx;
-	arch::dma *dma_rx;
+	dma *dma_tx;
+	dma *dma_rx;
 };
 }
 

@@ -3,7 +3,7 @@
 
 #include "stm32f1xx.h"
 
-#include "arch/ARM/STM32/F1/rcc.h"
+#include "impl/STM32/F1/rcc.h"
 
 #include "system/types.h"
 #include "system/interface/iomux.h"
@@ -66,7 +66,7 @@
  */
 
 
-namespace arch {
+namespace impl {
 class iomux : public sys::iomux {
 public:
 	iomux() = default;
@@ -79,15 +79,15 @@ public:
 // sys::clock interface
 public:
 	uint32_t get_clock_freq() override {
-		return arch::rcc::APB2::calc_clk();
+		return rcc::APB2::calc_clk();
 	}
 
 	sys::result_t enable_clock() override {
-		return arch::rcc::APB2::enable(rcc::APB2::CLK_AFIO);
+		return rcc::APB2::enable(rcc::APB2::CLK_AFIO);
 	}
 
 	sys::result_t disable_clock() override {
-		return arch::rcc::APB2::disable(rcc::APB2::CLK_AFIO);
+		return rcc::APB2::disable(rcc::APB2::CLK_AFIO);
 	}
 
 
