@@ -14,6 +14,8 @@ set(ARCH_SOURCES
         ${ARCH_SOURCES}
 
         "${CMAKE_SOURCE_DIR}/third_party/cmsis_device_stm32f1/Source/Templates/system_stm32f1xx.c"
+
+        "${CMAKE_SOURCE_DIR}/impl/STM32/HAL/hal.cpp"
 )
 
 

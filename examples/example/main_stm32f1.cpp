@@ -12,8 +12,8 @@
 #include "system/interface/flash.h"
 #include "system/interface/tim.h"
 
-#include "arch/ARM/STM32/F1/port.h"
-#include "arch/ARM/STM32/F1/pin.h"
+#include "impl/STM32/F1/port.h"
+#include "impl/STM32/F1/pin.h"
 
 arch::port		PORT_E(sys::port::PORT_E);
 arch::pin		PIN_LED1(PORT_E, sys::port::PIN_0);

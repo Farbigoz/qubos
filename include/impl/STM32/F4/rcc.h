@@ -563,7 +563,9 @@ namespace impl {
 		public:
 			static inline sys::result_t set_source(source_t src) {
 				SET_BIT(RCC->CFGR, src);
-				return (READ_BIT(RCC->CFGR, RCC_CFGR_SW << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos)) == (src << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos))) ? sys::RES_OK : sys::RES_ERROR;
+				sys::result_t res = (READ_BIT(RCC->CFGR, RCC_CFGR_SW << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos)) == (src << (RCC_CFGR_SWS_Pos - RCC_CFGR_SW_Pos))) ? sys::RES_OK : sys::RES_ERROR;
+				if (res == sys::RES_OK) AHB::update_clk();
+				return res;
 			}
 
 			static inline source_t get_source() {
@@ -580,6 +582,8 @@ namespace impl {
 					default: return 0;
 				}
 			}
+
+
 		};
 
 		class AHB {
@@ -827,20 +831,20 @@ namespace impl {
 
 		public:
 			static sys::result_t set_div(div_t d) {
-				// todo: check clock (max 36 MHz)
-				SET_BIT(RCC->CFGR, d);
-				return READ_BIT(RCC->CFGR, RCC_CFGR_PPRE1) == d ? sys::RES_OK : sys::RES_ERROR;
+				// todo: check clock (max 42 MHz)
+				MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1_Msk, d);
+				return READ_BIT(RCC->CFGR, RCC_CFGR_PPRE1_Msk) == d ? sys::RES_OK : sys::RES_ERROR;
 			}
 
 			static div_t get_div() {
-				return (div_t) READ_BIT(RCC->CFGR, RCC_CFGR_PPRE1);
+				return (div_t) READ_BIT(RCC->CFGR, RCC_CFGR_PPRE1_Msk);
 			}
 
 			static uint32_t calc_clk() {
 				uint32_t clk = AHB::calc_clk();
 				div_t div = get_div();
 				if (div & RCC_CFGR_PPRE1_2)
-					return clk / (2 << (div & (RCC_CFGR_PPRE1_0 | RCC_CFGR_PPRE1_1) >> RCC_CFGR_PPRE1_Pos));
+					return clk / (2 << ((div & (RCC_CFGR_PPRE1_0 | RCC_CFGR_PPRE1_1)) >> RCC_CFGR_PPRE1_Pos));
 				else
 					return clk;
 			}

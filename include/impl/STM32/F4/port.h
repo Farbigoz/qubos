@@ -180,7 +180,8 @@ public:
 		if (
 				(set_speed(mask, speed) != sys::RES_OK) ||
 				(set_driver(mask, drv) != sys::RES_OK) ||
-				(set_pull(mask, pull) != sys::RES_OK)
+				(set_pull(mask, pull) != sys::RES_OK) ||
+				(set_alt(mask, af) != sys::RES_OK)
 		) {
 			deinit(mask);
 			return sys::RES_ERROR;

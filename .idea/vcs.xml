@@ -8,6 +8,8 @@
     <mapping directory="$PROJECT_DIR$/third_party/cmsis_device_stm32f1" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/third_party/cmsis_device_stm32f4" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/third_party/littlefs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/third_party/lwip" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/third_party/stm32f1xx_hal_driver" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/third_party/stm32f4xx_hal_driver" vcs="Git" />
   </component>
 </project>
